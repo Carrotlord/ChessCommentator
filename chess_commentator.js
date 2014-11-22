@@ -123,6 +123,50 @@ function getRookMoves(i, j) {
     return collectedCoords;
 }
 
+function modifyPawnMoves(givenMoves, i, j, pawnColor) {
+    var actualMoves = [];
+    /* Pawns cannot attack forward.
+     * Filter out cases when a pawn is trying to attack forward. */
+    var closerMove = givenMoves[0];
+    var iPrime = closerMove[0];
+    var jPrime = closerMove[1];
+    if (g_board.getAt(iPrime, jPrime).isEmpty()) {
+        /* The pawn can freely move here. */
+        actualMoves.push(closerMove);
+        if (givenMoves.length === 2) {
+            var fartherMove = givenMoves[1];
+            iPrime = fartherMove[0];
+            jPrime = fartherMove[1];
+            if (g_board.getAt(iPrime, jPrime).isEmpty()) {
+                /* The pawn can also freely move here. */
+                actualMoves.push(fartherMove);
+            }
+        }
+    }
+    /* Pawns can attack diagonally. */
+    var potentialEnemy;
+    if (pawnColor === BLACK) {
+        potentialEnemy = g_board.getAt(i + 1, j + 1);
+        if (potentialEnemy && potentialEnemy.color === WHITE) {
+            actualMoves.push([i + 1, j + 1]);
+        }
+        potentialEnemy = g_board.getAt(i - 1, j + 1);
+        if (potentialEnemy && potentialEnemy.color === WHITE) {
+            actualMoves.push([i - 1, j + 1]);
+        }
+    } else {
+        potentialEnemy = g_board.getAt(i + 1, j - 1);
+        if (potentialEnemy && potentialEnemy.color === BLACK) {
+            actualMoves.push([i + 1, j - 1]);
+        }
+        potentialEnemy = g_board.getAt(i - 1, j - 1);
+        if (potentialEnemy && potentialEnemy.color === BLACK) {
+            actualMoves.push([i - 1, j - 1]);
+        }
+    }
+    return actualMoves;
+}
+
 /* TODO: Finish implementing this */
 Piece.prototype.legalMoves = function legalMoves(location) {
     var isOnHomeRow = function isOnHomeRow(location, color) {
@@ -155,16 +199,16 @@ Piece.prototype.legalMoves = function legalMoves(location) {
             /* Black moves downward. */
             if (isOnHomeRow(location, BLACK)) {
                 /* Pawns can move 1 or 2 squares down when on the home row. */
-                return toLegalLocations([[i, j + 1], [i, j + 2]]);
+                return toLegalLocations(modifyPawnMoves([[i, j + 1], [i, j + 2]], i, j, BLACK));
             } else {
-                return toLegalLocations([[i, j + 1]]);
+                return toLegalLocations(modifyPawnMoves([[i, j + 1]], i, j, BLACK));
             }
         } else {
             /* White moves upward. */
             if (isOnHomeRow(location, WHITE)) {
-                return toLegalLocations([[i, j - 1], [i, j - 2]]);
+                return toLegalLocations(modifyPawnMoves([[i, j - 1], [i, j - 2]], i, j, WHITE));
             } else {
-                return toLegalLocations([[i, j - 1]]);
+                return toLegalLocations(modifyPawnMoves([[i, j - 1]], i, j, WHITE));
             }
         }
     } else if (this.type === ROOK) {
@@ -266,6 +310,7 @@ function makeEmptyMoveToBoard() {
 var g_currentlySelectedSquareString = null;
 var g_board = new Board();
 var g_moveToBoard = makeEmptyMoveToBoard();
+var g_whoseMove = WHITE;
 
 function getCoords(squareString) {
     var aCharCode = "a".charCodeAt(0);
@@ -422,10 +467,17 @@ function generateHTMLPiece(piece) {
 function toggleSquare(squareString) {
     clearAllMoveTo();
     if (isMoveTo(squareString)) {
+        var player = g_whoseMove === WHITE ? "white" : "black";
         /* Move that selected piece. */
         var movingPiece = g_board.get(g_currentlySelectedSquareString);
+        /* Can only move when it's your turn. */
+        if (movingPiece.color !== g_whoseMove) {
+            alert("It is " + player + "'s turn.");
+            return;
+        }
         var fromSquare = document.getElementById(g_currentlySelectedSquareString);
         var toSquare = document.getElementById(squareString);
+        var killedPiece = g_board.get(squareString);
         g_board.set(g_currentlySelectedSquareString, new Piece(NEITHER, EMPTY));
         g_board.set(squareString, movingPiece);
         /* Change the DOM. */
@@ -435,6 +487,17 @@ function toggleSquare(squareString) {
         g_moveToBoard = makeEmptyMoveToBoard();
         /* Doing the next line is okay because g_moveToBoard has been destroyed. */
         toggleSquare(squareString);
+        if (killedPiece.type === KING) {
+            player = g_whoseMove === WHITE ? "White" : "Black";
+            alert(player + " wins!");
+            return;
+        }
+        /* Change the player. */
+        if (g_whoseMove === WHITE) {
+            g_whoseMove = BLACK;
+        } else {
+            g_whoseMove = WHITE;
+        }
         return;
     }
     var square = document.getElementById(squareString);
