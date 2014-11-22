@@ -12,6 +12,10 @@ td, th {
     font-size:50px;
 }
 
+.move_to_tile {
+    background-color: #ff8c00;
+}
+
 .selected_tile {
     background-color: #6a5acd;
 }
