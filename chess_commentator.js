@@ -35,6 +35,16 @@ Piece.prototype.toString = function toString() {
     return "";
 }
 
+function getKingMoves(i, j) {
+    return [[i - 1, j - 1], [i - 1, j + 1], [i + 1, j - 1], [i + 1, j + 1],
+            [i, j + 1], [i + 1, j], [i, j - 1], [i - 1, j]];
+}
+
+function getKnightMoves(i, j) {
+    return [[i - 2, j - 1], [i - 1, j - 2], [i + 1, j - 2], [i + 2, j - 1],
+            [i + 2, j + 1], [i + 1, j + 2], [i - 1, j + 2], [i - 2, j + 1]];
+}
+
 function getBishopMoves(i, j) {
     var collectedCoords = [];
     var iPrime;
@@ -162,12 +172,17 @@ Piece.prototype.legalMoves = function legalMoves(location) {
         return toLegalLocations(collectedCoords);
     } else if (this.type === BISHOP) {
         var collectedCoords = getBishopMoves(i, j);
-        console.log(collectedCoords);
         return toLegalLocations(collectedCoords);
     } else if (this.type === QUEEN) {
         var rookCoords = getRookMoves(i, j);
         var bishopCoords = getBishopMoves(i, j);
         return toLegalLocations(rookCoords.concat(bishopCoords));
+    } else if (this.type === KNIGHT) {
+        var collectedCoords = getKnightMoves(i, j);
+        return toLegalLocations(collectedCoords);
+    } else if (this.type === KING) {
+        var collectedCoords = getKingMoves(i, j);
+        return toLegalLocations(collectedCoords);
     }
     /* TODO: else if... */
     return [];
