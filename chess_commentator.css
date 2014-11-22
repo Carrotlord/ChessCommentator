@@ -28,6 +28,13 @@ td, th {
     background-color: white;
 }
 
+#chatroom {
+    vertical-align: top;
+    text-align: left;
+    font-family: Calibri,Consolas,monospace;
+    border: none;
+}
+
 #chessboard {
     border: 1px black solid;
     border-collapse: collapse;

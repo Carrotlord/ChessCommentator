@@ -464,6 +464,15 @@ function generateHTMLPiece(piece) {
     return node;
 }
 
+function aiSayComment(comment) {
+    var chatroom = document.getElementById("chatroom");
+    chatroom.innerHTML += "<span style=\"font-weight:bold;color:green;\">DeepGreen: </span>" + comment + "<br />";
+}
+
+function commentate(fromLocation, toLocation, currentPlayer) {
+    aiSayComment("A move has been made.");
+}
+
 function toggleSquare(squareString) {
     clearAllMoveTo();
     if (isMoveTo(squareString)) {
@@ -477,6 +486,8 @@ function toggleSquare(squareString) {
         }
         var fromSquare = document.getElementById(g_currentlySelectedSquareString);
         var toSquare = document.getElementById(squareString);
+        var fromLocation = g_currentlySelectedSquareString;
+        var toLocation = squareString;
         var killedPiece = g_board.get(squareString);
         g_board.set(g_currentlySelectedSquareString, new Piece(NEITHER, EMPTY));
         g_board.set(squareString, movingPiece);
@@ -492,6 +503,7 @@ function toggleSquare(squareString) {
             alert(player + " wins!");
             return;
         }
+        commentate(fromLocation, toLocation, g_whoseMove);
         /* Change the player. */
         if (g_whoseMove === WHITE) {
             g_whoseMove = BLACK;
