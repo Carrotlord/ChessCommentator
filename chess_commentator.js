@@ -35,6 +35,84 @@ Piece.prototype.toString = function toString() {
     return "";
 }
 
+function getBishopMoves(i, j) {
+    var collectedCoords = [];
+    var iPrime;
+    var jPrime;
+    /* Move northwest until we hit an obstacle. */
+    for (iPrime = i, jPrime = j;
+         iPrime >= 0 && jPrime >= 0 && (g_board.getAt(iPrime, jPrime).isEmpty() || iPrime === i);
+         --iPrime, --jPrime) {
+        collectedCoords.push([iPrime, jPrime]);
+    }
+    if (iPrime >= 0 && jPrime >= 0 && g_board.getAt(iPrime, jPrime).color !== this.color) {
+        collectedCoords.push([iPrime, jPrime]);
+    }
+    /* Move northeast until we hit an obstacle. */
+    for (iPrime = i, jPrime = j;
+         iPrime < 8 && jPrime >= 0 && (g_board.getAt(iPrime, jPrime).isEmpty() || iPrime === i);
+         ++iPrime, --jPrime) {
+        collectedCoords.push([iPrime, jPrime]);
+    }
+    if (iPrime < 8 && jPrime >= 0 && g_board.getAt(iPrime, jPrime).color !== this.color) {
+        collectedCoords.push([iPrime, jPrime]);
+    }
+    /* Move southwest until we hit an obstacle. */
+    for (iPrime = i, jPrime = j;
+         iPrime >= 0 && jPrime < 8 && (g_board.getAt(iPrime, jPrime).isEmpty() || iPrime === i);
+         --iPrime, ++jPrime) {
+        collectedCoords.push([iPrime, jPrime]);
+    }
+    if (iPrime >= 0 && jPrime < 8 && g_board.getAt(iPrime, jPrime).color !== this.color) {
+        collectedCoords.push([iPrime, jPrime]);
+    }
+    /* Move southeast until we hit an obstacle. */
+    for (iPrime = i, jPrime = j;
+         iPrime < 8 && jPrime < 8 && (g_board.getAt(iPrime, jPrime).isEmpty() || iPrime === i);
+         ++iPrime, ++jPrime) {
+        collectedCoords.push([iPrime, jPrime]);
+    }
+    if (iPrime < 8 && jPrime < 8 && g_board.getAt(iPrime, jPrime).color !== this.color) {
+        collectedCoords.push([iPrime, jPrime]);
+    }
+    return collectedCoords;
+}
+
+function getRookMoves(i, j) {
+    var collectedCoords = [];
+    var iPrime;
+    var jPrime;
+    /* Move left until we hit an obstacle. */
+    for (iPrime = i; iPrime >= 0 && (g_board.getAt(iPrime, j).isEmpty() || iPrime === i); --iPrime) {
+        collectedCoords.push([iPrime, j]);
+    }
+    if (iPrime >= 0 && g_board.getAt(iPrime, j).color !== this.color) {
+        collectedCoords.push([iPrime, j]);
+    }
+    /* Move right until we hit an obstacle. */
+    for (iPrime = i; iPrime < 8 && (g_board.getAt(iPrime, j).isEmpty() || iPrime === i); ++iPrime) {
+        collectedCoords.push([iPrime, j]);
+    }
+    if (iPrime < 8 && g_board.getAt(iPrime, j).color !== this.color) {
+        collectedCoords.push([iPrime, j]);
+    }
+    /* Move up until we hit an obstacle. */
+    for (jPrime = j; jPrime >= 0 && (g_board.getAt(i, jPrime).isEmpty() || jPrime === j); --jPrime) {
+        collectedCoords.push([i, jPrime]);
+    }
+    if (jPrime >= 0 && g_board.getAt(i, jPrime).color !== this.color) {
+        collectedCoords.push([i, jPrime]);
+    }
+    /* Move down until we hit an obstacle. */
+    for (jPrime = j; jPrime < 8 && (g_board.getAt(i, jPrime).isEmpty() || jPrime === j); ++jPrime) {
+        collectedCoords.push([i, jPrime]);
+    }
+    if (jPrime < 8 && g_board.getAt(i, jPrime).color !== this.color) {
+        collectedCoords.push([i, jPrime]);
+    }
+    return collectedCoords;
+}
+
 /* TODO: Finish implementing this */
 Piece.prototype.legalMoves = function legalMoves(location) {
     var isOnHomeRow = function isOnHomeRow(location, color) {
@@ -80,38 +158,16 @@ Piece.prototype.legalMoves = function legalMoves(location) {
             }
         }
     } else if (this.type === ROOK) {
-        var collectedCoords = [];
-        var iPrime;
-        var jPrime;
-        /* Move left until we hit an obstacle. */
-        for (iPrime = i; iPrime >= 0 && (g_board.getAt(iPrime, j).isEmpty() || iPrime === i); --iPrime) {
-            collectedCoords.push([iPrime, j]);
-        }
-        if (iPrime >= 0 && g_board.getAt(iPrime, j).color !== this.color) {
-            collectedCoords.push([iPrime, j]);
-        }
-        /* Move right until we hit an obstacle. */
-        for (iPrime = i; iPrime < 8 && (g_board.getAt(iPrime, j).isEmpty() || iPrime === i); ++iPrime) {
-            collectedCoords.push([iPrime, j]);
-        }
-        if (iPrime < 8 && g_board.getAt(iPrime, j).color !== this.color) {
-            collectedCoords.push([iPrime, j]);
-        }
-        /* Move up until we hit an obstacle. */
-        for (jPrime = j; jPrime >= 0 && (g_board.getAt(i, jPrime).isEmpty() || jPrime === j); --jPrime) {
-            collectedCoords.push([i, jPrime]);
-        }
-        if (jPrime >= 0 && g_board.getAt(i, jPrime).color !== this.color) {
-            collectedCoords.push([i, jPrime]);
-        }
-        /* Move down until we hit an obstacle. */
-        for (jPrime = j; jPrime < 8 && (g_board.getAt(i, jPrime).isEmpty() || jPrime === j); ++jPrime) {
-            collectedCoords.push([i, jPrime]);
-        }
-        if (jPrime < 8 && g_board.getAt(i, jPrime).color !== this.color) {
-            collectedCoords.push([i, jPrime]);
-        }
+        var collectedCoords = getRookMoves(i, j);
         return toLegalLocations(collectedCoords);
+    } else if (this.type === BISHOP) {
+        var collectedCoords = getBishopMoves(i, j);
+        console.log(collectedCoords);
+        return toLegalLocations(collectedCoords);
+    } else if (this.type === QUEEN) {
+        var rookCoords = getRookMoves(i, j);
+        var bishopCoords = getBishopMoves(i, j);
+        return toLegalLocations(rookCoords.concat(bishopCoords));
     }
     /* TODO: else if... */
     return [];
@@ -362,6 +418,8 @@ function toggleSquare(squareString) {
         removeAllChildren(toSquare);
         toSquare.appendChild(generateHTMLPiece(movingPiece));
         g_moveToBoard = makeEmptyMoveToBoard();
+        /* Doing the next line is okay because g_moveToBoard has been destroyed. */
+        toggleSquare(squareString);
         return;
     }
     var square = document.getElementById(squareString);
