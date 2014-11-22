@@ -62,6 +62,7 @@ Piece.prototype.legalMoves = function legalMoves(location) {
     var i = coords[0];
     var j = coords[1];
     if (this.type === PAWN) {
+        /* TODO : Pawns don't attack correctly yet. */
         if (this.color === BLACK) {
             /* Black moves downward. */
             if (isOnHomeRow(location, BLACK)) {
@@ -78,7 +79,41 @@ Piece.prototype.legalMoves = function legalMoves(location) {
                 return toLegalLocations([[i, j - 1]]);
             }
         }
-    } /* TODO: else if... */
+    } else if (this.type === ROOK) {
+        var collectedCoords = [];
+        var iPrime;
+        var jPrime;
+        /* Move left until we hit an obstacle. */
+        for (iPrime = i; iPrime >= 0 && (g_board.getAt(iPrime, j).isEmpty() || iPrime === i); --iPrime) {
+            collectedCoords.push([iPrime, j]);
+        }
+        if (iPrime >= 0 && g_board.getAt(iPrime, j).color !== this.color) {
+            collectedCoords.push([iPrime, j]);
+        }
+        /* Move right until we hit an obstacle. */
+        for (iPrime = i; iPrime < 8 && (g_board.getAt(iPrime, j).isEmpty() || iPrime === i); ++iPrime) {
+            collectedCoords.push([iPrime, j]);
+        }
+        if (iPrime < 8 && g_board.getAt(iPrime, j).color !== this.color) {
+            collectedCoords.push([iPrime, j]);
+        }
+        /* Move up until we hit an obstacle. */
+        for (jPrime = j; jPrime >= 0 && (g_board.getAt(i, jPrime).isEmpty() || jPrime === j); --jPrime) {
+            collectedCoords.push([i, jPrime]);
+        }
+        if (jPrime >= 0 && g_board.getAt(i, jPrime).color !== this.color) {
+            collectedCoords.push([i, jPrime]);
+        }
+        /* Move down until we hit an obstacle. */
+        for (jPrime = j; jPrime < 8 && (g_board.getAt(i, jPrime).isEmpty() || jPrime === j); ++jPrime) {
+            collectedCoords.push([i, jPrime]);
+        }
+        if (jPrime < 8 && g_board.getAt(i, jPrime).color !== this.color) {
+            collectedCoords.push([i, jPrime]);
+        }
+        return toLegalLocations(collectedCoords);
+    }
+    /* TODO: else if... */
     return [];
 }
 
@@ -110,6 +145,10 @@ Board.prototype.get = function get(squareString) {
     var coords = getCoords(squareString);
     var i = coords[0];
     var j = coords[1];
+    return this.contents[j][i];
+}
+
+Board.prototype.getAt = function getAt(i, j) {
     return this.contents[j][i];
 }
 
