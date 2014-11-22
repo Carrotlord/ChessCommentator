@@ -1,0 +1,22 @@
+td, th {
+    border: 1px black solid;
+    border-collapse: collapse;
+    height: 64px;
+    width: 64px;
+    text-align: center;
+    /* display: table-cell; */
+    vertical-align: middle;
+}
+
+.blue_tile {
+    background-color: #b0c4de;
+}
+
+.white_tile {
+    background-color: white;
+}
+
+#chessboard {
+    border: 1px black solid;
+    border-collapse: collapse;
+}
