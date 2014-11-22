@@ -1,5 +1,7 @@
 var ILLEGAL_LOCATION = "illegal_location";
 
+var ERROR_REFERENCE = "!";
+
 var WHITE = 0;
 var BLACK = 1;
 var NEITHER = 2;
@@ -87,7 +89,7 @@ function Board() {
     var blackBishop = new Piece(BLACK, BISHOP);
     var blackKnight = new Piece(BLACK, KNIGHT);
     var blackPawn = new Piece(BLACK, PAWN);
-    var whiteKing = new Piece(BLACK, KING);
+    var whiteKing = new Piece(WHITE, KING);
     var whiteQueen = new Piece(WHITE, QUEEN);
     var whiteRook = new Piece(WHITE, ROOK);
     var whiteBishop = new Piece(WHITE, BISHOP);
@@ -109,6 +111,13 @@ Board.prototype.get = function get(squareString) {
     var i = coords[0];
     var j = coords[1];
     return this.contents[j][i];
+}
+
+Board.prototype.set = function set(squareString, piece) {
+    var coords = getCoords(squareString);
+    var i = coords[0];
+    var j = coords[1];
+    this.contents[j][i] = piece;
 }
 
 Board.prototype.isEmptyAt = function isEmptyAt(location) {
@@ -231,10 +240,91 @@ function clearAllMoveTo() {
             }
         }
     }
+    /* Note: do not clear the moveToBoard. We need its lingering values
+     * to allow the isMoveTo function to work.
+     */
+}
+
+function isMoveTo(location) {
+    var coords = getCoords(location);
+    var i = coords[0];
+    var j = coords[1];
+    return g_moveToBoard[j][i] === MOVE_TO;
+}
+
+function removeAllChildren(node) {
+    while (node.firstChild) {
+        node.removeChild(node.firstChild);
+    }
+}
+
+function getEntityReference(piece) {
+    var wrap = function wrap(refChar) {
+        return "&#x265" + refChar + ";";
+    }
+    switch (piece.color) {
+        case WHITE:
+            switch (piece.type) {
+                case KING:
+                    return wrap("4");
+                case QUEEN:
+                    return wrap("5");
+                case ROOK:
+                    return wrap("6");
+                case BISHOP:
+                    return wrap("7");
+                case KNIGHT:
+                    return wrap("8");
+                case PAWN:
+                    return wrap("9");
+                default:
+                    return ERROR_REFERENCE;
+            }
+        case BLACK:
+            switch (piece.type) {
+                case KING:
+                    return wrap("a");
+                case QUEEN:
+                    return wrap("b");
+                case ROOK:
+                    return wrap("c");
+                case BISHOP:
+                    return wrap("d");
+                case KNIGHT:
+                    return wrap("e");
+                case PAWN:
+                    return wrap("f");
+                default:
+                    return ERROR_REFERENCE;
+            }
+        default:
+            return ERROR_REFERENCE;
+    }
+}
+
+function generateHTMLPiece(piece) {
+    var node = document.createElement("span");
+    node.className = "piece";
+    node.innerHTML = getEntityReference(piece);
+    return node;
 }
 
 function toggleSquare(squareString) {
     clearAllMoveTo();
+    if (isMoveTo(squareString)) {
+        /* Move that selected piece. */
+        var movingPiece = g_board.get(g_currentlySelectedSquareString);
+        var fromSquare = document.getElementById(g_currentlySelectedSquareString);
+        var toSquare = document.getElementById(squareString);
+        g_board.set(g_currentlySelectedSquareString, new Piece(NEITHER, EMPTY));
+        g_board.set(squareString, movingPiece);
+        /* Change the DOM. */
+        removeAllChildren(fromSquare);
+        removeAllChildren(toSquare);
+        toSquare.appendChild(generateHTMLPiece(movingPiece));
+        g_moveToBoard = makeEmptyMoveToBoard();
+        return;
+    }
     var square = document.getElementById(squareString);
     if (square.className === "selected_tile") {
         /* Turn off the square that's selected: */
@@ -256,5 +346,6 @@ function toggleSquare(squareString) {
         var actualMoves = finalizeLegalMoves(possibleMoves, attacker.color);
         /* Then display possible moves. */
         displayPossibleMoves(actualMoves);
+        /* Do not destroy the move-to board, since it will be needed for the next isMoveTo. */
     }
 }
