@@ -466,11 +466,36 @@ function generateHTMLPiece(piece) {
 
 function aiSayComment(comment) {
     var chatroom = document.getElementById("chatroom");
+    if (chatroom.innerHTML.length > 1600) {
+        chatroom.innerHTML = "";
+    }
     chatroom.innerHTML += "<span style=\"font-weight:bold;color:green;\">DeepGreen: </span>" + comment + "<br />";
 }
 
-function commentate(fromLocation, toLocation, currentPlayer) {
-    aiSayComment("A move has been made.");
+function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function commentate(fromLocation, toLocation, currentPlayer, movedPiece, killedPiece) {
+    if (movedPiece.type === PAWN) {
+        var choice = randInt(0, 2);
+        if (choice === 0) {
+            aiSayComment("Pawns are the heart of chess.");
+        } else if (choice === 1) {
+            aiSayComment("Take control of the center...");
+        } else if (choice === 2) {
+            aiSayComment("Don't underestimate or waste your pawns.");
+        }
+    } else if (movedPiece.type === KNIGHT) {
+        var choice = randInt(0, 1);
+        if (choice === 0) {
+            aiSayComment("A knight in the corner makes you a mourner.");
+        } else if (choice === 1) {
+            aiSayComment("Keep some space around your knights so they have more freedom to jump around.");
+        }
+    } else {
+        aiSayComment("A move has been made.");
+    }
 }
 
 function toggleSquare(squareString) {
@@ -503,7 +528,7 @@ function toggleSquare(squareString) {
             alert(player + " wins!");
             return;
         }
-        commentate(fromLocation, toLocation, g_whoseMove);
+        commentate(fromLocation, toLocation, g_whoseMove, movingPiece, killedPiece);
         /* Change the player. */
         if (g_whoseMove === WHITE) {
             g_whoseMove = BLACK;
