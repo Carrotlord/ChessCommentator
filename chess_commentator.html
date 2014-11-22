@@ -3,162 +3,187 @@
 <!-- @author Jiangcheng Oliver Chu -->
 
 <head>
-<link rel="stylesheet" type="text/css" href="chess_commentator.css">
 <title>Oliver's Chess Commentator</title>
+<link rel="stylesheet" type="text/css" href="chess_commentator.css">
+<script src="chess_commentator.js" type="text/javascript"></script>
 </head>
 
 <body>
 <table id="chessboard">
 <tr>
-<td id="a1" class="white_tile">
-<span style="font-size:50px;">&#x2654;</span>
-<span style="font-size:50px;">&#x2655;</span>
-<span style="font-size:50px;">&#x265C;</span>
-<span style="font-size:50px;">&#x265D;</span>
-<span style="font-size:50px;">&#x265E;</span>
-<span style="font-size:50px;">&#x265F;</span>
+<td id="a1" onclick="toggleSquare('a1');" class="white_tile">
+<span class="piece">&#x265c;</span>
 </td>
-<td id="a2" class="blue_tile">
+<td id="b1" onclick="toggleSquare('b1');" class="blue_tile">
+<span class="piece">&#x265e;</span>
 </td>
-<td id="a3" class="white_tile">
+<td id="c1" onclick="toggleSquare('c1');" class="white_tile">
+<span class="piece">&#x265d;</span>
 </td>
-<td id="a4" class="blue_tile">
+<td id="d1" onclick="toggleSquare('d1');" class="blue_tile">
+<span class="piece">&#x265b;</span>
 </td>
-<td id="a5" class="white_tile">
+<td id="e1" onclick="toggleSquare('e1');" class="white_tile">
+<span class="piece">&#x265a;</span>
 </td>
-<td id="a6" class="blue_tile">
+<td id="f1" onclick="toggleSquare('f1');" class="blue_tile">
+<span class="piece">&#x265d;</span>
 </td>
-<td id="a7" class="white_tile">
+<td id="g1" onclick="toggleSquare('g1');" class="white_tile">
+<span class="piece">&#x265e;</span>
 </td>
-<td id="a8" class="blue_tile">
-</td>
-</tr>
-<tr>
-<td id="b1" class="blue_tile">
-<span style="font-size:50px;">&#x2654;</span>
-</td>
-<td id="b2" class="white_tile">
-<span style="font-size:50px;">&#x2654;</span>
-</td>
-<td id="b3" class="blue_tile">
-</td>
-<td id="b4" class="white_tile">
-</td>
-<td id="b5" class="blue_tile">
-</td>
-<td id="b6" class="white_tile">
-</td>
-<td id="b7" class="blue_tile">
-</td>
-<td id="b8" class="white_tile">
+<td id="h1" onclick="toggleSquare('h1');" class="blue_tile">
+<span class="piece">&#x265c;</span>
 </td>
 </tr>
 <tr>
-<td id="c1" class="white_tile">
+<td id="a2" onclick="toggleSquare('a2');" class="blue_tile">
+<span class="piece">&#x265f;</span>
 </td>
-<td id="c2" class="blue_tile">
+<td id="b2" onclick="toggleSquare('b2');" class="white_tile">
+<span class="piece">&#x265f;</span>
 </td>
-<td id="c3" class="white_tile">
+<td id="c2" onclick="toggleSquare('c2');" class="blue_tile">
+<span class="piece">&#x265f;</span>
 </td>
-<td id="c4" class="blue_tile">
+<td id="d2" onclick="toggleSquare('d2');" class="white_tile">
+<span class="piece">&#x265f;</span>
 </td>
-<td id="c5" class="white_tile">
+<td id="e2" onclick="toggleSquare('e2');" class="blue_tile">
+<span class="piece">&#x265f;</span>
 </td>
-<td id="c6" class="blue_tile">
+<td id="f2" onclick="toggleSquare('f2');" class="white_tile">
+<span class="piece">&#x265f;</span>
 </td>
-<td id="c7" class="white_tile">
+<td id="g2" onclick="toggleSquare('g2');" class="blue_tile">
+<span class="piece">&#x265f;</span>
 </td>
-<td id="c8" class="blue_tile">
-</td>
-</tr>
-<tr>
-<td id="d1" class="blue_tile">
-</td>
-<td id="d2" class="white_tile">
-</td>
-<td id="d3" class="blue_tile">
-</td>
-<td id="d4" class="white_tile">
-</td>
-<td id="d5" class="blue_tile">
-</td>
-<td id="d6" class="white_tile">
-</td>
-<td id="d7" class="blue_tile">
-</td>
-<td id="d8" class="white_tile">
+<td id="h2" onclick="toggleSquare('h2');" class="white_tile">
+<span class="piece">&#x265f;</span>
 </td>
 </tr>
 <tr>
-<td id="e1" class="white_tile">
+<td id="a3" onclick="toggleSquare('a3');" class="white_tile">
 </td>
-<td id="e2" class="blue_tile">
+<td id="b3" onclick="toggleSquare('b3');" class="blue_tile">
 </td>
-<td id="e3" class="white_tile">
+<td id="c3" onclick="toggleSquare('c3');" class="white_tile">
 </td>
-<td id="e4" class="blue_tile">
+<td id="d3" onclick="toggleSquare('d3');" class="blue_tile">
 </td>
-<td id="e5" class="white_tile">
+<td id="e3" onclick="toggleSquare('e3');" class="white_tile">
 </td>
-<td id="e6" class="blue_tile">
+<td id="f3" onclick="toggleSquare('f3');" class="blue_tile">
 </td>
-<td id="e7" class="white_tile">
+<td id="g3" onclick="toggleSquare('g3');" class="white_tile">
 </td>
-<td id="e8" class="blue_tile">
-</td>
-</tr>
-<tr>
-<td id="f1" class="blue_tile">
-</td>
-<td id="f2" class="white_tile">
-</td>
-<td id="f3" class="blue_tile">
-</td>
-<td id="f4" class="white_tile">
-</td>
-<td id="f5" class="blue_tile">
-</td>
-<td id="f6" class="white_tile">
-</td>
-<td id="f7" class="blue_tile">
-</td>
-<td id="f8" class="white_tile">
+<td id="h3" onclick="toggleSquare('h3');" class="blue_tile">
 </td>
 </tr>
 <tr>
-<td id="g1" class="white_tile">
+<td id="a4" onclick="toggleSquare('a4');" class="blue_tile">
 </td>
-<td id="g2" class="blue_tile">
+<td id="b4" onclick="toggleSquare('b4');" class="white_tile">
 </td>
-<td id="g3" class="white_tile">
+<td id="c4" onclick="toggleSquare('c4');" class="blue_tile">
 </td>
-<td id="g4" class="blue_tile">
+<td id="d4" onclick="toggleSquare('d4');" class="white_tile">
 </td>
-<td id="g5" class="white_tile">
+<td id="e4" onclick="toggleSquare('e4');" class="blue_tile">
 </td>
-<td id="g6" class="blue_tile">
+<td id="f4" onclick="toggleSquare('f4');" class="white_tile">
 </td>
-<td id="g7" class="white_tile">
+<td id="g4" onclick="toggleSquare('g4');" class="blue_tile">
 </td>
-<td id="g8" class="blue_tile">
+<td id="h4" onclick="toggleSquare('h4');" class="white_tile">
 </td>
 </tr>
 <tr>
-<td id="h1" class="blue_tile">
+<td id="a5" onclick="toggleSquare('a5');" class="white_tile">
 </td>
-<td id="h2" class="white_tile">
+<td id="b5" onclick="toggleSquare('b5');" class="blue_tile">
 </td>
-<td id="h3" class="blue_tile">
+<td id="c5" onclick="toggleSquare('c5');" class="white_tile">
 </td>
-<td id="h4" class="white_tile">
+<td id="d5" onclick="toggleSquare('d5');" class="blue_tile">
 </td>
-<td id="h5" class="blue_tile">
+<td id="e5" onclick="toggleSquare('e5');" class="white_tile">
 </td>
-<td id="h6" class="white_tile">
+<td id="f5" onclick="toggleSquare('f5');" class="blue_tile">
 </td>
-<td id="h7" class="blue_tile">
+<td id="g5" onclick="toggleSquare('g5');" class="white_tile">
 </td>
-<td id="h8" class="white_tile">
+<td id="h5" onclick="toggleSquare('h5');" class="blue_tile">
+</td>
+</tr>
+<tr>
+<td id="a6" onclick="toggleSquare('a6');" class="blue_tile">
+</td>
+<td id="b6" onclick="toggleSquare('b6');" class="white_tile">
+</td>
+<td id="c6" onclick="toggleSquare('c6');" class="blue_tile">
+</td>
+<td id="d6" onclick="toggleSquare('d6');" class="white_tile">
+</td>
+<td id="e6" onclick="toggleSquare('e6');" class="blue_tile">
+</td>
+<td id="f6" onclick="toggleSquare('f6');" class="white_tile">
+</td>
+<td id="g6" onclick="toggleSquare('g6');" class="blue_tile">
+</td>
+<td id="h6" onclick="toggleSquare('h6');" class="white_tile">
+</td>
+</tr>
+<tr>
+<td id="a7" onclick="toggleSquare('a7');" class="white_tile">
+<span class="piece">&#x2659;</span>
+</td>
+<td id="b7" onclick="toggleSquare('b7');" class="blue_tile">
+<span class="piece">&#x2659;</span>
+</td>
+<td id="c7" onclick="toggleSquare('c7');" class="white_tile">
+<span class="piece">&#x2659;</span>
+</td>
+<td id="d7" onclick="toggleSquare('d7');" class="blue_tile">
+<span class="piece">&#x2659;</span>
+</td>
+<td id="e7" onclick="toggleSquare('e7');" class="white_tile">
+<span class="piece">&#x2659;</span>
+</td>
+<td id="f7" onclick="toggleSquare('f7');" class="blue_tile">
+<span class="piece">&#x2659;</span>
+</td>
+<td id="g7" onclick="toggleSquare('g7');" class="white_tile">
+<span class="piece">&#x2659;</span>
+</td>
+<td id="h7" onclick="toggleSquare('h7');" class="blue_tile">
+<span class="piece">&#x2659;</span>
+</td>
+</tr>
+<tr>
+<td id="a8" onclick="toggleSquare('a8');" class="blue_tile">
+<span class="piece">&#x2656;</span>
+</td>
+<td id="b8" onclick="toggleSquare('b8');" class="white_tile">
+<span class="piece">&#x2658;</span>
+</td>
+<td id="c8" onclick="toggleSquare('c8');" class="blue_tile">
+<span class="piece">&#x2657;</span>
+</td>
+<td id="d8" onclick="toggleSquare('d8');" class="white_tile">
+<span class="piece">&#x2655;</span>
+</td>
+<td id="e8" onclick="toggleSquare('e8');" class="blue_tile">
+<span class="piece">&#x2654;</span>
+</td>
+<td id="f8" onclick="toggleSquare('f8');" class="white_tile">
+<span class="piece">&#x2657;</span>
+</td>
+<td id="g8" onclick="toggleSquare('g8');" class="blue_tile">
+<span class="piece">&#x2658;</span>
+</td>
+<td id="h8" onclick="toggleSquare('h8');" class="white_tile">
+<span class="piece">&#x2656;</span>
 </td>
 </tr>
 

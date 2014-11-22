@@ -8,6 +8,14 @@ td, th {
     vertical-align: middle;
 }
 
+.piece {
+    font-size:50px;
+}
+
+.selected_tile {
+    background-color: #6a5acd;
+}
+
 .blue_tile {
     background-color: #b0c4de;
 }

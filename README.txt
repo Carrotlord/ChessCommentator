@@ -20,4 +20,4 @@ See the following link for an example of using displaying big unicode-character 
 http://stackoverflow.com/questions/18686199/fill-unicode-characters-in-labels
 
 Other resources:
-[to be filled out]
+http://en.wikipedia.org/wiki/Web_colors
