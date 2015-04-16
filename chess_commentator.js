@@ -17,6 +17,15 @@ var EMPTY = 6;
 var NONE = 0;
 var MOVE_TO = 1;
 
+var g_currentlySelectedSquareString = null;
+var g_board = new Board();
+var g_moveToBoard = makeEmptyMoveToBoard();
+var g_whoseMove = WHITE;
+var g_lastCommentHasNoBreak = false;
+var g_whiteFirstTurn = true;
+var g_blackFirstTurn = true;
+var g_lastChoice = -1;
+
 function Piece(color, type) {
     this.type = type;
     this.color = color;
@@ -194,7 +203,6 @@ Piece.prototype.legalMoves = function legalMoves(location) {
     var i = coords[0];
     var j = coords[1];
     if (this.type === PAWN) {
-        /* TODO : Pawns don't attack correctly yet. */
         if (this.color === BLACK) {
             /* Black moves downward. */
             if (isOnHomeRow(location, BLACK)) {
@@ -228,7 +236,6 @@ Piece.prototype.legalMoves = function legalMoves(location) {
         var collectedCoords = getKingMoves(i, j);
         return toLegalLocations(collectedCoords);
     }
-    /* TODO: else if... */
     return [];
 }
 
@@ -284,6 +291,18 @@ Board.prototype.isConsumable = function isConsumable(location, attackerColor) {
     return this.isEmptyAt(location) || targetedPiece.color !== attackerColor;
 }
 
+function getPlayer(playerType, isCapitalized) {
+    if (playerType === WHITE) {
+        return isCapitalized ? "White" : "white";
+    } else {
+        return isCapitalized ? "Black" : "black";
+    }
+}
+
+function getOppositePlayer(playerType, isCapitalized) {
+    return playerType === WHITE ? getPlayer(BLACK, isCapitalized) : getPlayer(WHITE, isCapitalized);
+}
+
 function finalizeLegalMoves(currentMoves, attackerColor) {
     var finalizedMoves = [];
     for (var i = 0; i < currentMoves.length; ++i) {
@@ -306,11 +325,6 @@ function makeEmptyMoveToBoard() {
     }
     return board;
 }
-
-var g_currentlySelectedSquareString = null;
-var g_board = new Board();
-var g_moveToBoard = makeEmptyMoveToBoard();
-var g_whoseMove = WHITE;
 
 function getCoords(squareString) {
     var aCharCode = "a".charCodeAt(0);
@@ -464,37 +478,148 @@ function generateHTMLPiece(piece) {
     return node;
 }
 
-function aiSayComment(comment) {
-    var chatroom = document.getElementById("chatroom");
-    if (chatroom.innerHTML.length > 1600) {
-        chatroom.innerHTML = "";
-    }
-    chatroom.innerHTML += "<span style=\"font-weight:bold;color:green;\">DeepGreen: </span>" + comment + "<br />";
-}
-
 function randInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function between(target, small, large) {
+    return target >= small && target <= large;
+}
+
+function aiSayComment(comment, hasNoBreak, player) {
+    var chatroom = document.getElementById("chatroom");
+    if (chatroom.innerHTML.length > 3200) {
+        chatroom.innerHTML = "";
+        g_lastCommentHasNoBreak = false;
+    }
+    if (!g_lastCommentHasNoBreak) {
+        chatroom.innerHTML += "<span style=\"font-weight:bold;color:green;\">DeepGreen: </span>";
+    }
+    if (player) {
+        chatroom.innerHTML += player + ", ";
+    }
+    chatroom.innerHTML += comment;
+    if (!hasNoBreak) {
+        chatroom.innerHTML += "<br />";
+    } else {
+        chatroom.innerHTML += " ";
+    }
+    g_lastCommentHasNoBreak = hasNoBreak;
+}
+
 function commentate(fromLocation, toLocation, currentPlayer, movedPiece, killedPiece) {
+    var fromCoords = getCoords(fromLocation);
+    var toCoords = getCoords(toLocation);
+    var from = {i: fromCoords[0], j: fromCoords[1]};
+    var to = {i: toCoords[0], j: toCoords[1]};
     if (movedPiece.type === PAWN) {
-        var choice = randInt(0, 2);
-        if (choice === 0) {
-            aiSayComment("Pawns are the heart of chess.");
-        } else if (choice === 1) {
-            aiSayComment("Take control of the center...");
-        } else if (choice === 2) {
-            aiSayComment("Don't underestimate or waste your pawns.");
+        if (currentPlayer === WHITE && g_whiteFirstTurn) {
+            if (to.j === 4) {
+                if (to.i === 4) {
+                    aiSayComment("White's first move opens a path for both the bishop and queen. A very decent move, I think.", true);
+                } else if (between(to.i, 2, 5)) {
+                    aiSayComment("White moves the first pawn and strongly takes the center.", true);
+                } else {
+                    aiSayComment("White's first pawn move is unusual and takes control of the board's edge.", true);
+                }
+            } else {
+                aiSayComment("White's first pawn doesn't take advantage of the center. I'm a bit worried about this.", true);
+            }
+            g_whiteFirstTurn = false;
+        } else if (currentPlayer === BLACK && g_blackFirstTurn) {
+            if (to.j === 3) {
+                if (to.i === 4) {
+                    aiSayComment("Black's first move opens a path for both the bishop and queen. Usually an effective response.", true);
+                } else if (between(to.i, 2, 5)) {
+                    aiSayComment("Black responds with a pawn and moves strongly to the center.", true);
+                } else {
+                    aiSayComment("Black's first pawn move is unusual and takes control of the board's edge.", true);
+                }
+            } else {
+                aiSayComment("Black's first pawn doesn't take advantage of the center. I'm quite worried about this.", true);
+            }
+            g_blackFirstTurn = false;
+        } else {
+            var choice = randInt(0, 2);
+            if (choice === 0 && g_lastChoice !== 0) {
+                aiSayComment("pawns are the heart of chess.", true, getPlayer(currentPlayer, true));
+            } else if (choice === 1 && g_lastChoice !== 1) {
+                aiSayComment("keep control of the center...", true, getPlayer(currentPlayer, true));
+            } else if (choice === 2) {
+                aiSayComment("don't underestimate or waste your pawns.", true, getPlayer(currentPlayer, true));
+            } else {
+                aiSayComment(getPlayer(currentPlayer, true) + " moves a pawn.", true);
+            }
+            g_lastChoice = choice;
         }
     } else if (movedPiece.type === KNIGHT) {
-        var choice = randInt(0, 1);
-        if (choice === 0) {
-            aiSayComment("A knight in the corner makes you a mourner.");
-        } else if (choice === 1) {
-            aiSayComment("Keep some space around your knights so they have more freedom to jump around.");
+        if (currentPlayer === WHITE && g_whiteFirstTurn) {
+            aiSayComment("White's first move advances the knight. An interesting choice!", true);
+            g_whiteFirstTurn = false;
+        } else if (currentPlayer === BLACK && g_blackFirstTurn) {
+            aiSayComment("Black responds to white's move using a knight.", true);
+            g_blackFirstTurn = false;
+        } else {
+            var choice = randInt(100, 101);
+            if (choice === 100 && g_lastChoice !== 100) {
+                aiSayComment("remember a knight in the corner makes you a mourner.", true, getPlayer(currentPlayer, true));
+            } else if (choice === 101 && g_lastChoice !== 101) { 
+                aiSayComment("keep some space around your knights so they have more freedom to jump around.", true, getPlayer(currentPlayer, true));
+            } else {
+                aiSayComment(getPlayer(currentPlayer, true) + " moves a knight.", true);
+            }
+            g_lastChoice = choice;
         }
+    } else if (movedPiece.type === BISHOP) {
+        var choice = randInt(200, 201);
+        if (choice === 200 && g_lastChoice !== 200) {
+            aiSayComment("use your bishop to pin " + getOppositePlayer(currentPlayer, false) + "'s pieces!", true, getPlayer(currentPlayer, true));
+        } else if (choice === 201 && g_lastChoice !== 201) { 
+            aiSayComment("remember two bishops on the field are a great choice.", true, getPlayer(currentPlayer, true));
+        } else {
+            aiSayComment(getPlayer(currentPlayer, true) + ", how will your bishop fare?", true);
+        }
+        g_lastChoice = choice;
+    } else if (movedPiece.type === ROOK) {
+        var choice = randInt(300, 301);
+        if (choice === 300 && g_lastChoice !== 300) {
+            aiSayComment("rooks are valuable. Avoid losing them to " +
+                         getOppositePlayer(currentPlayer, false) + "'s knights and bishops.", true, getPlayer(currentPlayer, true));
+        } else if (choice === 301 && g_lastChoice !== 301) { 
+            aiSayComment("a rook in the right place can prevent other pieces from moving. Imagine a king behind one of " +
+                         getOppositePlayer(currentPlayer, false) + "'s pieces, and your rook staring it in the face.", true, getPlayer(currentPlayer, true));
+        } else {
+            aiSayComment(getPlayer(currentPlayer, true) + " has moved a rook!", true);
+        }
+        g_lastChoice = choice;
+    } else if (movedPiece.type === QUEEN) {
+        var choice = randInt(400, 401);
+        if (choice === 400 && g_lastChoice !== 400) {
+            aiSayComment("A queen trade can happen early. Or if you're confident, use your queen often, and always avoid trading it for " +
+                         getOppositePlayer(currentPlayer, false) + "'s queen.", true, getPlayer(currentPlayer, true));
+        } else if (choice === 401 && g_lastChoice !== 401) { 
+            aiSayComment("queen usage in the start of the game can be good or bad.", true, getPlayer(currentPlayer, true));
+        } else {
+            aiSayComment("Some players like to maintain the terminology 'queen in check'.", true);
+        }
+        g_lastChoice = choice;
+    } else if (movedPiece.type === KING) {
+        var choice = randInt(500, 501);
+        if (choice === 500 && g_lastChoice !== 500) {
+            aiSayComment("Moving the king is interesting. The king has slightly less power than a knight. It is still an attacking piece though!", true, getPlayer(currentPlayer, true));
+        } else if (choice === 501 && g_lastChoice !== 501) { 
+            aiSayComment("Are you moving the king because it's in danger, or to give your army a confidence boost?", true, getPlayer(currentPlayer, true));
+        } else {
+            aiSayComment(getPlayer(currentPlayer, true) + " has moved the king for some reason.", true);
+        }
+        g_lastChoice = choice;
     } else {
-        aiSayComment("A move has been made.");
+        aiSayComment("A move has been made.", true);
+    }
+    if (currentPlayer === WHITE) {
+        aiSayComment("It is now black's turn.");
+    } else {
+        aiSayComment("It is now white's turn.");
     }
 }
 
@@ -507,6 +632,7 @@ function toggleSquare(squareString) {
         /* Can only move when it's your turn. */
         if (movingPiece.color !== g_whoseMove) {
             alert("It is " + player + "'s turn.");
+            toggleSquare(g_currentlySelectedSquareString);
             return;
         }
         var fromSquare = document.getElementById(g_currentlySelectedSquareString);
@@ -522,7 +648,8 @@ function toggleSquare(squareString) {
         toSquare.appendChild(generateHTMLPiece(movingPiece));
         g_moveToBoard = makeEmptyMoveToBoard();
         /* Doing the next line is okay because g_moveToBoard has been destroyed. */
-        toggleSquare(squareString);
+        toggleSquare(fromLocation);
+        // toggleSquare(squareString);
         if (killedPiece.type === KING) {
             player = g_whoseMove === WHITE ? "White" : "Black";
             alert(player + " wins!");
@@ -560,4 +687,10 @@ function toggleSquare(squareString) {
         displayPossibleMoves(actualMoves);
         /* Do not destroy the move-to board, since it will be needed for the next isMoveTo. */
     }
+}
+
+function startUp() {
+    aiSayComment("Welcome to Chess Commentator! Play chess with a friend and I will make remarks about both of your gameplay styles." +
+                 " My name is DeepGreen, the computer commentator.");
+    aiSayComment("It is currently white's turn.");
 }
