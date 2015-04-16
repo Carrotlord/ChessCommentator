@@ -39,9 +39,11 @@ Piece.prototype.equals = function equals(otherPiece) {
     return this.type === otherPiece.type && this.color === otherPiece.color;
 }
 
-/* TODO: Implement this */
 Piece.prototype.toString = function toString() {
-    return "";
+    if (this.isEmpty()) {
+        return "Empty square";
+    }
+    return (this.color === WHITE ? "White" : "Black") + " " + getPieceName(this);
 }
 
 function getKingMoves(i, j) {
@@ -237,6 +239,19 @@ Piece.prototype.legalMoves = function legalMoves(location) {
         return toLegalLocations(collectedCoords);
     }
     return [];
+}
+
+/** Returns a deep copy of board. */
+function copyBoard(board) {
+    var copiedBoard = new Board();
+    copiedBoard.contents = [];
+    for (var i = 0; i < 8; i++) {
+        copiedBoard.contents.push([]);
+        for (var j = 0; j < 8; j++) {
+            copiedBoard.contents[copiedBoard.contents.length - 1].push(board.contents[i][j]);
+        }
+    }
+    return copiedBoard;
 }
 
 function Board() {
@@ -486,9 +501,46 @@ function between(target, small, large) {
     return target >= small && target <= large;
 }
 
+function getPieceValue(piece) {
+    switch (piece.type) {
+        case KING:
+            return 999999;
+        case QUEEN:
+            return 900;
+        case ROOK:
+            return 500;
+        case BISHOP:
+        case KNIGHT:
+            return 350;
+        default:
+            return 100;
+    }
+}
+
+function getPieceName(piece) {
+    switch (piece.type) {
+        case KING:
+            return "king";
+        case QUEEN:
+            return "queen";
+        case ROOK:
+            return "rook";
+        case BISHOP:
+            return "bishop";
+        case KNIGHT:
+            return "knight";
+        default:
+            return "pawn";
+    }
+}
+
+function isPieceThreatened(coords, board) {
+    
+}
+
 function aiSayComment(comment, hasNoBreak, player) {
     var chatroom = document.getElementById("chatroom");
-    if (chatroom.innerHTML.length > 3200) {
+    if (chatroom.innerHTML.length > 3200 && !g_lastCommentHasNoBreak) {
         chatroom.innerHTML = "";
         g_lastCommentHasNoBreak = false;
     }
@@ -512,7 +564,31 @@ function commentate(fromLocation, toLocation, currentPlayer, movedPiece, killedP
     var toCoords = getCoords(toLocation);
     var from = {i: fromCoords[0], j: fromCoords[1]};
     var to = {i: toCoords[0], j: toCoords[1]};
-    if (movedPiece.type === PAWN) {
+    if (!killedPiece.isEmpty()) {
+        var player = getPlayer(currentPlayer, true);
+        var otherPlayer = getOppositePlayer(currentPlayer, false);
+        var pieceName = getPieceName(movedPiece);
+        var otherPieceName = getPieceName(killedPiece);
+        if (movedPiece.type === KING) {
+            if (killedPiece.type === QUEEN) {
+                aiSayComment(player + " uses the king in order to capture " + otherPlayer + "'s queen! Uh oh!", true);
+            } else {
+                aiSayComment(player + " uses the king in battle to capture a " + otherPiece + "!", true);
+            }
+        } else if (killedPiece.type === QUEEN) {
+            if (movedPiece.type === QUEEN) {
+                aiSayComment(player + "'s queen has taken " + otherPlayer + "'s queen!", true);
+            } else {
+                aiSayComment("Ouch! It looks like " + otherPlayer + " just lost a queen to a " + pieceName + "!", true);
+            }
+        } else if (movedPiece.type === killedPiece.type) {
+            aiSayComment(player + "'s " + pieceName + " has captured another " + pieceName + ".", true);
+        } else if (getPieceValue(killedPiece) - getPieceValue(movedPiece) >= 150) {
+            aiSayComment(player + "'s " + pieceName + " has destroyed one of " + otherPlayer + "'s valuable " + otherPieceName + "s.", true);
+        } else {
+            aiSayComment(player + " captures " + otherPlayer + "'s " + otherPieceName + " using a " + pieceName + ".", true);
+        }
+    } else if (movedPiece.type === PAWN) {
         if (currentPlayer === WHITE && g_whiteFirstTurn) {
             if (to.j === 4) {
                 if (to.i === 4) {
@@ -653,6 +729,7 @@ function toggleSquare(squareString) {
         if (killedPiece.type === KING) {
             player = g_whoseMove === WHITE ? "White" : "Black";
             alert(player + " wins!");
+            aiSayComment(player + " has won the game! Congratulations!");
             return;
         }
         commentate(fromLocation, toLocation, g_whoseMove, movingPiece, killedPiece);
