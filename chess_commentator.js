@@ -17,6 +17,8 @@ var EMPTY = 6;
 var NONE = 0;
 var MOVE_TO = 1;
 
+var PIECE_NOT_FOUND = "not_found";
+
 var g_currentlySelectedSquareString = null;
 var g_board = new Board();
 var g_moveToBoard = makeEmptyMoveToBoard();
@@ -25,6 +27,7 @@ var g_lastCommentHasNoBreak = false;
 var g_whiteFirstTurn = true;
 var g_blackFirstTurn = true;
 var g_lastChoice = -1;
+var g_wasPawnPromoted = false;
 
 function Piece(color, type) {
     this.type = type;
@@ -298,13 +301,30 @@ Board.prototype.get = function get(squareString) {
 }
 
 Board.prototype.getAt = function getAt(i, j) {
-    return this.contents[j][i];
+    try {
+        return this.contents[j][i];
+    } catch (ex) {
+        console.log("Something went wrong: " + this + " @ coords(" + [i,j] + ")");
+        return new Piece(NEITHER, EMPTY);
+    }
 }
 
 Board.prototype.set = function set(squareString, piece) {
     var coords = getCoords(squareString);
     var i = coords[0];
     var j = coords[1];
+    /* Pawn promotion check */
+    if (piece.type === PAWN) {
+        if (piece.color === BLACK && j === 7) {
+            piece = new Piece(BLACK, QUEEN);
+            aiSayComment("Black has promoted a pawn to a queen!");
+            g_wasPawnPromoted = true;
+        } else if (j === 0) {
+            piece = new Piece(WHITE, QUEEN);
+            aiSayComment("White has promoted a pawn to a queen!");
+            g_wasPawnPromoted = true;
+        }
+    }
     this.contents[j][i] = piece;
 }
 
@@ -336,8 +356,8 @@ Board.prototype.isPieceThreatened = function(coords) {
                 /* Enemy piece detected. Can it attack our square? */
                 var legalMoves = potentialThreat.legalMoves(coordsToLocation([i, j]), this);
                 var actualLegalMoves = finalizeLegalMoves(legalMoves, getOppositeColor(whosePerspective), this);
-                console.log("Checking... " + potentialThreat.toString() + " at (" + [i,j] + ")");
-                console.log("Moves: [" + legalMoves + "]");
+                //console.log("Checking... " + potentialThreat.toString() + " at (" + [i,j] + ")");
+                //console.log("Moves: [" + legalMoves + "]");
                 if (arrayContains(actualLegalMoves, currentLocation)) {
                     threat.isSafe = false;
                     threat.opponentPieces.push(new Threatener(potentialThreat, [i, j]));
@@ -346,6 +366,42 @@ Board.prototype.isPieceThreatened = function(coords) {
         }
     }
     return threat;
+}
+
+Board.prototype.findFirst = function(piece) {
+    for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+            if (this.contents[j][i].equals(piece)) {
+                return [i, j];
+            }
+        }
+    }
+    return PIECE_NOT_FOUND;
+}
+
+Board.prototype.isKingInCheck = function(kingColor) {
+    /* Unfortunately we don't know where the king is located. */
+    var kingCoords = this.findFirst(new Piece(kingColor, KING));
+    if (kingCoords === PIECE_NOT_FOUND) {
+        aiSayComment("<b>Okay, you must have done something weird. The king does not exist.</b>");
+        return false;
+    }
+    return !this.isPieceThreatened(kingCoords).isSafe;
+}
+
+Board.prototype.isQueenInCheck = function(queenColor) {
+    var queenCoords = this.findFirst(new Piece(queenColor, QUEEN));
+    if (queenCoords === PIECE_NOT_FOUND) {
+        return false;
+    }
+    return !this.isPieceThreatened(queenCoords).isSafe;
+}
+
+function updateGraphicalSquare(coords) {
+    var squareString = coordsToLocation(coords);
+    var square = document.getElementById(squareString);
+    removeAllChildren(square);
+    square.appendChild(generateHTMLPiece(g_board.get(squareString)));
 }
 
 function weakestThreat(threatObj) {
@@ -484,14 +540,20 @@ function makeEmptyMoveToBoard() {
 }
 
 function getCoords(squareString) {
+    //console.log("Receiving " + squareString);
     var aCharCode = "a".charCodeAt(0);
     var oneCharCode = "1".charCodeAt(0);
     if (squareString.length !== 2) {
         alert("Bad square string: " + squareString);
         return;
     }
-    return [squareString.charCodeAt(0) - aCharCode,
-            squareString.charCodeAt(1) - oneCharCode];
+    var result = [squareString.charCodeAt(0) - aCharCode,
+                  squareString.charCodeAt(1) - oneCharCode];
+    if (!(between(result[0], 0, 7) && between(result[1], 0, 7))) {
+        console.log("Invalid coordinates (" + result + ") generated from squareString " + squareString + ".");
+        return;
+    }
+    return result;
 }
 
 function isLegalLocation(location) {
@@ -891,8 +953,9 @@ function toggleSquare(squareString) {
     clearAllMoveTo();
     if (isMoveTo(squareString)) {
         var player = g_whoseMove === WHITE ? "white" : "black";
+        var virtualBoard = copyBoard(g_board);
         /* Move that selected piece. */
-        var movingPiece = g_board.get(g_currentlySelectedSquareString);
+        var movingPiece = virtualBoard.get(g_currentlySelectedSquareString);
         /* Can only move when it's your turn. */
         if (movingPiece.color !== g_whoseMove) {
             alert("It is " + player + "'s turn.");
@@ -903,13 +966,28 @@ function toggleSquare(squareString) {
         var toSquare = document.getElementById(squareString);
         var fromLocation = g_currentlySelectedSquareString;
         var toLocation = squareString;
-        var killedPiece = g_board.get(squareString);
-        g_board.set(g_currentlySelectedSquareString, new Piece(NEITHER, EMPTY));
-        g_board.set(squareString, movingPiece);
-        /* Change the DOM. */
-        removeAllChildren(fromSquare);
-        removeAllChildren(toSquare);
-        toSquare.appendChild(generateHTMLPiece(movingPiece));
+        var killedPiece = virtualBoard.get(squareString);
+        virtualBoard.set(g_currentlySelectedSquareString, new Piece(NEITHER, EMPTY));
+        virtualBoard.set(squareString, movingPiece);
+        var moveSucceeded = false;
+        if (virtualBoard.isKingInCheck(g_whoseMove)) {
+            /* Move failed. King would be put in check. */
+            alert("You can't put your king in check!");
+            /* Now discard all changes. */
+        } else {
+            /* Move succeeded. Copy over changes. */
+            g_board = virtualBoard;
+            /* Change the DOM. */
+            removeAllChildren(fromSquare);
+            removeAllChildren(toSquare);
+            if (g_wasPawnPromoted) {
+                toSquare.appendChild(generateHTMLPiece(new Piece(movingPiece.color, QUEEN)));
+                g_wasPawnPromoted = false;
+            } else {
+                toSquare.appendChild(generateHTMLPiece(movingPiece));
+            }
+            moveSucceeded = true;
+        }
         g_moveToBoard = makeEmptyMoveToBoard();
         /* Doing the next line is okay because g_moveToBoard has been destroyed. */
         toggleSquare(fromLocation);
@@ -920,12 +998,21 @@ function toggleSquare(squareString) {
             aiSayComment(player + " has won the game! Congratulations!");
             return;
         }
-        commentate(fromLocation, toLocation, g_whoseMove, movingPiece, killedPiece);
-        /* Change the player. */
-        if (g_whoseMove === WHITE) {
-            g_whoseMove = BLACK;
-        } else {
-            g_whoseMove = WHITE;
+        if (g_board.isKingInCheck(getOppositeColor(g_whoseMove))) {
+            aiSayComment('<span style="color:red; font-weight: bold;">Player ' +
+                         getOppositePlayer(g_whoseMove, false) + '! Your king is now in check!</span>');
+        } else if (g_board.isQueenInCheck(getOppositeColor(g_whoseMove))) {
+            aiSayComment('Player ' +
+                         getOppositePlayer(g_whoseMove, false) + ', your queen is under attack!');
+        }
+        if (moveSucceeded) {
+            commentate(fromLocation, toLocation, g_whoseMove, movingPiece, killedPiece);
+            /* Change the player. */
+            if (g_whoseMove === WHITE) {
+                g_whoseMove = BLACK;
+            } else {
+                g_whoseMove = WHITE;
+            }
         }
         return;
     }
