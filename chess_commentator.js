@@ -56,99 +56,108 @@ function getKnightMoves(i, j) {
             [i + 2, j + 1], [i + 1, j + 2], [i - 1, j + 2], [i - 2, j + 1]];
 }
 
-function getBishopMoves(i, j) {
+function getBishopMoves(i, j, board) {
+    if (!board) {
+        board = g_board;
+    }
     var collectedCoords = [];
     var iPrime;
     var jPrime;
     /* Move northwest until we hit an obstacle. */
     for (iPrime = i, jPrime = j;
-         iPrime >= 0 && jPrime >= 0 && (g_board.getAt(iPrime, jPrime).isEmpty() || iPrime === i);
+         iPrime >= 0 && jPrime >= 0 && (board.getAt(iPrime, jPrime).isEmpty() || iPrime === i);
          --iPrime, --jPrime) {
         collectedCoords.push([iPrime, jPrime]);
     }
-    if (iPrime >= 0 && jPrime >= 0 && g_board.getAt(iPrime, jPrime).color !== this.color) {
+    if (iPrime >= 0 && jPrime >= 0 && board.getAt(iPrime, jPrime).color !== this.color) {
         collectedCoords.push([iPrime, jPrime]);
     }
     /* Move northeast until we hit an obstacle. */
     for (iPrime = i, jPrime = j;
-         iPrime < 8 && jPrime >= 0 && (g_board.getAt(iPrime, jPrime).isEmpty() || iPrime === i);
+         iPrime < 8 && jPrime >= 0 && (board.getAt(iPrime, jPrime).isEmpty() || iPrime === i);
          ++iPrime, --jPrime) {
         collectedCoords.push([iPrime, jPrime]);
     }
-    if (iPrime < 8 && jPrime >= 0 && g_board.getAt(iPrime, jPrime).color !== this.color) {
+    if (iPrime < 8 && jPrime >= 0 && board.getAt(iPrime, jPrime).color !== this.color) {
         collectedCoords.push([iPrime, jPrime]);
     }
     /* Move southwest until we hit an obstacle. */
     for (iPrime = i, jPrime = j;
-         iPrime >= 0 && jPrime < 8 && (g_board.getAt(iPrime, jPrime).isEmpty() || iPrime === i);
+         iPrime >= 0 && jPrime < 8 && (board.getAt(iPrime, jPrime).isEmpty() || iPrime === i);
          --iPrime, ++jPrime) {
         collectedCoords.push([iPrime, jPrime]);
     }
-    if (iPrime >= 0 && jPrime < 8 && g_board.getAt(iPrime, jPrime).color !== this.color) {
+    if (iPrime >= 0 && jPrime < 8 && board.getAt(iPrime, jPrime).color !== this.color) {
         collectedCoords.push([iPrime, jPrime]);
     }
     /* Move southeast until we hit an obstacle. */
     for (iPrime = i, jPrime = j;
-         iPrime < 8 && jPrime < 8 && (g_board.getAt(iPrime, jPrime).isEmpty() || iPrime === i);
+         iPrime < 8 && jPrime < 8 && (board.getAt(iPrime, jPrime).isEmpty() || iPrime === i);
          ++iPrime, ++jPrime) {
         collectedCoords.push([iPrime, jPrime]);
     }
-    if (iPrime < 8 && jPrime < 8 && g_board.getAt(iPrime, jPrime).color !== this.color) {
+    if (iPrime < 8 && jPrime < 8 && board.getAt(iPrime, jPrime).color !== this.color) {
         collectedCoords.push([iPrime, jPrime]);
     }
     return collectedCoords;
 }
 
-function getRookMoves(i, j) {
+function getRookMoves(i, j, board) {
+    if (!board) {
+        board = g_board;
+    }
     var collectedCoords = [];
     var iPrime;
     var jPrime;
     /* Move left until we hit an obstacle. */
-    for (iPrime = i; iPrime >= 0 && (g_board.getAt(iPrime, j).isEmpty() || iPrime === i); --iPrime) {
+    for (iPrime = i; iPrime >= 0 && (board.getAt(iPrime, j).isEmpty() || iPrime === i); --iPrime) {
         collectedCoords.push([iPrime, j]);
     }
-    if (iPrime >= 0 && g_board.getAt(iPrime, j).color !== this.color) {
+    if (iPrime >= 0 && board.getAt(iPrime, j).color !== this.color) {
         collectedCoords.push([iPrime, j]);
     }
     /* Move right until we hit an obstacle. */
-    for (iPrime = i; iPrime < 8 && (g_board.getAt(iPrime, j).isEmpty() || iPrime === i); ++iPrime) {
+    for (iPrime = i; iPrime < 8 && (board.getAt(iPrime, j).isEmpty() || iPrime === i); ++iPrime) {
         collectedCoords.push([iPrime, j]);
     }
-    if (iPrime < 8 && g_board.getAt(iPrime, j).color !== this.color) {
+    if (iPrime < 8 && board.getAt(iPrime, j).color !== this.color) {
         collectedCoords.push([iPrime, j]);
     }
     /* Move up until we hit an obstacle. */
-    for (jPrime = j; jPrime >= 0 && (g_board.getAt(i, jPrime).isEmpty() || jPrime === j); --jPrime) {
+    for (jPrime = j; jPrime >= 0 && (board.getAt(i, jPrime).isEmpty() || jPrime === j); --jPrime) {
         collectedCoords.push([i, jPrime]);
     }
-    if (jPrime >= 0 && g_board.getAt(i, jPrime).color !== this.color) {
+    if (jPrime >= 0 && board.getAt(i, jPrime).color !== this.color) {
         collectedCoords.push([i, jPrime]);
     }
     /* Move down until we hit an obstacle. */
-    for (jPrime = j; jPrime < 8 && (g_board.getAt(i, jPrime).isEmpty() || jPrime === j); ++jPrime) {
+    for (jPrime = j; jPrime < 8 && (board.getAt(i, jPrime).isEmpty() || jPrime === j); ++jPrime) {
         collectedCoords.push([i, jPrime]);
     }
-    if (jPrime < 8 && g_board.getAt(i, jPrime).color !== this.color) {
+    if (jPrime < 8 && board.getAt(i, jPrime).color !== this.color) {
         collectedCoords.push([i, jPrime]);
     }
     return collectedCoords;
 }
 
-function modifyPawnMoves(givenMoves, i, j, pawnColor) {
+function modifyPawnMoves(givenMoves, i, j, pawnColor, board) {
+    if (!board) {
+        board = g_board;
+    }
     var actualMoves = [];
     /* Pawns cannot attack forward.
      * Filter out cases when a pawn is trying to attack forward. */
     var closerMove = givenMoves[0];
     var iPrime = closerMove[0];
     var jPrime = closerMove[1];
-    if (g_board.getAt(iPrime, jPrime).isEmpty()) {
+    if (board.getAt(iPrime, jPrime).isEmpty()) {
         /* The pawn can freely move here. */
         actualMoves.push(closerMove);
         if (givenMoves.length === 2) {
             var fartherMove = givenMoves[1];
             iPrime = fartherMove[0];
             jPrime = fartherMove[1];
-            if (g_board.getAt(iPrime, jPrime).isEmpty()) {
+            if (board.getAt(iPrime, jPrime).isEmpty()) {
                 /* The pawn can also freely move here. */
                 actualMoves.push(fartherMove);
             }
@@ -157,20 +166,20 @@ function modifyPawnMoves(givenMoves, i, j, pawnColor) {
     /* Pawns can attack diagonally. */
     var potentialEnemy;
     if (pawnColor === BLACK) {
-        potentialEnemy = g_board.getAt(i + 1, j + 1);
+        potentialEnemy = board.getAt(i + 1, j + 1);
         if (potentialEnemy && potentialEnemy.color === WHITE) {
             actualMoves.push([i + 1, j + 1]);
         }
-        potentialEnemy = g_board.getAt(i - 1, j + 1);
+        potentialEnemy = board.getAt(i - 1, j + 1);
         if (potentialEnemy && potentialEnemy.color === WHITE) {
             actualMoves.push([i - 1, j + 1]);
         }
     } else {
-        potentialEnemy = g_board.getAt(i + 1, j - 1);
+        potentialEnemy = board.getAt(i + 1, j - 1);
         if (potentialEnemy && potentialEnemy.color === BLACK) {
             actualMoves.push([i + 1, j - 1]);
         }
-        potentialEnemy = g_board.getAt(i - 1, j - 1);
+        potentialEnemy = board.getAt(i - 1, j - 1);
         if (potentialEnemy && potentialEnemy.color === BLACK) {
             actualMoves.push([i - 1, j - 1]);
         }
@@ -178,8 +187,11 @@ function modifyPawnMoves(givenMoves, i, j, pawnColor) {
     return actualMoves;
 }
 
-/* TODO: Finish implementing this */
-Piece.prototype.legalMoves = function legalMoves(location) {
+/* TODO: Finish implementing this (requires castling, en passant) */
+Piece.prototype.legalMoves = function legalMoves(location, board) {
+    if (!board) {
+        board = g_board;
+    }
     var isOnHomeRow = function isOnHomeRow(location, color) {
         var coords = getCoords(location);
         var j = coords[1];
@@ -209,27 +221,27 @@ Piece.prototype.legalMoves = function legalMoves(location) {
             /* Black moves downward. */
             if (isOnHomeRow(location, BLACK)) {
                 /* Pawns can move 1 or 2 squares down when on the home row. */
-                return toLegalLocations(modifyPawnMoves([[i, j + 1], [i, j + 2]], i, j, BLACK));
+                return toLegalLocations(modifyPawnMoves([[i, j + 1], [i, j + 2]], i, j, BLACK, board));
             } else {
-                return toLegalLocations(modifyPawnMoves([[i, j + 1]], i, j, BLACK));
+                return toLegalLocations(modifyPawnMoves([[i, j + 1]], i, j, BLACK, board));
             }
         } else {
             /* White moves upward. */
             if (isOnHomeRow(location, WHITE)) {
-                return toLegalLocations(modifyPawnMoves([[i, j - 1], [i, j - 2]], i, j, WHITE));
+                return toLegalLocations(modifyPawnMoves([[i, j - 1], [i, j - 2]], i, j, WHITE, board));
             } else {
-                return toLegalLocations(modifyPawnMoves([[i, j - 1]], i, j, WHITE));
+                return toLegalLocations(modifyPawnMoves([[i, j - 1]], i, j, WHITE, board));
             }
         }
     } else if (this.type === ROOK) {
-        var collectedCoords = getRookMoves(i, j);
+        var collectedCoords = getRookMoves(i, j, board);
         return toLegalLocations(collectedCoords);
     } else if (this.type === BISHOP) {
-        var collectedCoords = getBishopMoves(i, j);
+        var collectedCoords = getBishopMoves(i, j, board);
         return toLegalLocations(collectedCoords);
     } else if (this.type === QUEEN) {
-        var rookCoords = getRookMoves(i, j);
-        var bishopCoords = getBishopMoves(i, j);
+        var rookCoords = getRookMoves(i, j, board);
+        var bishopCoords = getBishopMoves(i, j, board);
         return toLegalLocations(rookCoords.concat(bishopCoords));
     } else if (this.type === KNIGHT) {
         var collectedCoords = getKnightMoves(i, j);
@@ -307,7 +319,67 @@ Board.prototype.isConsumable = function isConsumable(location, attackerColor) {
 }
 
 Board.prototype.isPieceThreatened = function(coords) {
-    
+    var Threatener = function(piece, coords) {
+        this.piece = piece;
+        this.coords = coords;
+    }
+    var threat = {isSafe: true, opponentPieces: [], threatenedPiece: this.getAt(coords[0], coords[1])};
+    var whosePerspective = threat.threatenedPiece.color;
+    var currentLocation = coordsToLocation(coords);
+    if (whosePerspective === NEITHER) {
+        return threat;
+    }
+    for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+            var potentialThreat = this.contents[j][i];
+            if (!potentialThreat.isEmpty() && potentialThreat.color !== whosePerspective) {
+                /* Enemy piece detected. Can it attack our square? */
+                var legalMoves = potentialThreat.legalMoves(coordsToLocation([i, j]), this);
+                var actualLegalMoves = finalizeLegalMoves(legalMoves, getOppositeColor(whosePerspective), this);
+                console.log("Checking... " + potentialThreat.toString() + " at (" + [i,j] + ")");
+                console.log("Moves: [" + legalMoves + "]");
+                if (arrayContains(actualLegalMoves, currentLocation)) {
+                    threat.isSafe = false;
+                    threat.opponentPieces.push(new Threatener(potentialThreat, [i, j]));
+                }
+            }
+        }
+    }
+    return threat;
+}
+
+function weakestThreat(threatObj) {
+    if (threatObj.isSafe || threatObj.opponentPieces.length === 0) {
+        return null;
+    }
+    var weakest = threatObj.opponentPieces[0];
+    for (var i = 1; i < threatObj.opponentPieces.length; i++) {
+        var current = threatObj.opponentPieces[i].piece;
+        if (getPieceThreatValue(current) < getPieceThreatValue(weakest)) {
+            weakest = current;
+        }
+    }
+    return weakest;
+}
+
+function getPieceThreatValue(piece) {
+    if (piece.type === KING) {
+        return 300;
+    } else {
+        return getPieceValue(piece);
+    }
+}
+
+Board.prototype.vulnerableToWeakPiece = function(coords) {
+    var threatObj = this.isPieceThreatened(coords);
+    var weakest = weakestThreat(threatObj);
+    if (weakest === null) {
+        return null;
+    }
+    if (getPieceValue(threatObj.threatenedPiece) > getPieceValue(weakest)) {
+        return weakest;
+    }
+    return null;
 }
 
 Board.prototype.whoIsWinning = function() {
@@ -342,6 +414,33 @@ Board.prototype.whoIsInTheLead = function() {
     }
 }
 
+/** Returns true if and only if each element of both arrays are equal.
+ *  Handles nested arrays correctly. (eg. [[1,2],[3]] and [[1,2],[3]] are equal)
+ *  If either argument is a non-array, returns the === equality test of both arguments.
+ */
+function arrayEquals(array, otherArray) {
+    if (array instanceof Array && otherArray instanceof Array && array.length === otherArray.length) {
+        for (var i = 0; i < array.length; i++) {
+            if (!arrayEquals(array[i], otherArray[i])) {
+                return false;
+            }
+        }
+        return true;
+    } else {
+        /* These aren't actually both arrays: */
+        return array === otherArray;
+    }
+}
+
+function arrayContains(array, element) {
+    for (var i = 0; i < array.length; i++) {
+        if (arrayEquals(array[i], element)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function getPlayer(playerType, isCapitalized) {
     if (playerType === WHITE) {
         return isCapitalized ? "White" : "white";
@@ -358,11 +457,14 @@ function getOppositeColor(playerColor) {
     return playerColor === WHITE ? BLACK : WHITE;
 }
 
-function finalizeLegalMoves(currentMoves, attackerColor) {
+function finalizeLegalMoves(currentMoves, attackerColor, board) {
+    if (!board) {
+        board = g_board;
+    }
     var finalizedMoves = [];
     for (var i = 0; i < currentMoves.length; ++i) {
         var location = currentMoves[i];
-        if (g_board.isConsumable(location, attackerColor)) {
+        if (board.isConsumable(location, attackerColor)) {
             finalizedMoves.push(location);
         }
     }
@@ -561,7 +663,13 @@ function getPieceValue(piece) {
 }
 
 function getPieceName(piece) {
-    switch (piece.type) {
+    var type;
+    if (piece instanceof Piece) {
+        type = piece.type;
+    } else {
+        type = piece;
+    }
+    switch (type) {
         case KING:
             return "king";
         case QUEEN:
@@ -572,8 +680,12 @@ function getPieceName(piece) {
             return "bishop";
         case KNIGHT:
             return "knight";
-        default:
+        case PAWN:
             return "pawn";
+        case EMPTY:
+            return "empty square";
+        default:
+            return "[Bad Piece Name] " + piece.type;
     }
 }
 
@@ -603,11 +715,11 @@ function commentate(fromLocation, toLocation, currentPlayer, movedPiece, killedP
     var toCoords = getCoords(toLocation);
     var from = {i: fromCoords[0], j: fromCoords[1]};
     var to = {i: toCoords[0], j: toCoords[1]};
+    var player = getPlayer(currentPlayer, true);
+    var otherPlayer = getOppositePlayer(currentPlayer, false);
+    var pieceName = getPieceName(movedPiece);
+    var otherPieceName = getPieceName(killedPiece);
     if (!killedPiece.isEmpty()) {
-        var player = getPlayer(currentPlayer, true);
-        var otherPlayer = getOppositePlayer(currentPlayer, false);
-        var pieceName = getPieceName(movedPiece);
-        var otherPieceName = getPieceName(killedPiece);
         if (movedPiece.type === KING) {
             if (killedPiece.type === QUEEN) {
                 aiSayComment(player + " uses the king in order to capture " + otherPlayer + "'s queen! Uh oh!", true);
@@ -626,6 +738,35 @@ function commentate(fromLocation, toLocation, currentPlayer, movedPiece, killedP
             aiSayComment(player + "'s " + pieceName + " has destroyed one of " + otherPlayer + "'s valuable " + otherPieceName + "s.", true);
         } else {
             aiSayComment(player + " captures " + otherPlayer + "'s " + otherPieceName + " using a " + pieceName + ".", true);
+        }
+    } else if (g_board.vulnerableToWeakPiece(toCoords) !== null) {
+        var threatener = g_board.vulnerableToWeakPiece(toCoords);
+        var dangersToThreatener = g_board.isPieceThreatened(threatener.coords);
+        var threatensBothWays = false;
+        for (var i = 0; i < dangersToThreatener.opponentPieces.length; i++) {
+            /* Are we one of the dangers to the threateners? */
+            var pieceData = dangersToThreatener.opponentPieces[i];
+            if (arrayEquals(toCoords, pieceData.coords)) {
+                /* We threaten the piece we are threatened by. */
+                threatensBothWays = true;
+            }
+        }
+        if (!threatensBothWays) {
+            /* We just moved ourselves into danger. A weaker piece is able to capture us,
+             * and we can't attack it with the piece we just moved. */
+            aiSayComment(player + "'s " + getPieceName(g_board.getAt(toCoords[0], toCoords[1]).type) + " is now vulnerable to " +
+                         otherPlayer + "'s " + getPieceName(threatener.piece.type) + "! Was this intentional?", true);
+        } else if (getPieceValue(movedPiece) < getPieceValue(threatener.piece)) {
+            /* We threaten the other piece, and we are a weaker piece. This is an attack. */
+            aiSayComment(player + "'s " + getPieceName(g_board.getAt(toCoords[0], toCoords[1]).type) + " is now attacking " +
+                         otherPlayer + "'s " + getPieceName(threatener.piece.type) + "!", true);
+        } else if (getPieceValue(movedPiece) > getPieceValue(threatener.piece)) {
+            /* We threaten the other piece, and we are a stronger piece. This is a sacrifice, strategic attack, or mistake. */
+            aiSayComment(player + "'s " + getPieceName(g_board.getAt(toCoords[0], toCoords[1]).type) + " is now attacking " +
+                         otherPlayer + "'s " + getPieceName(threatener.piece.type) + ", at the expense of putting the " +
+                         getPieceName(g_board.getAt(toCoords[0], toCoords[1]).type) + " in danger!", true);
+        } else {
+            aiSayComment("Those two " + getPieceName(threatener.piece.type) + "s are now attacking each other!", true);
         }
     } else if (movedPiece.type === PAWN) {
         if (currentPlayer === WHITE && g_whiteFirstTurn) {
