@@ -20,6 +20,10 @@ td, th {
     background-color: #6a5acd;
 }
 
+.opponents_selected_tile {
+    background-color: maroon;
+}
+
 .blue_tile {
     background-color: #b0c4de;
 }

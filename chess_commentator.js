@@ -306,6 +306,42 @@ Board.prototype.isConsumable = function isConsumable(location, attackerColor) {
     return this.isEmptyAt(location) || targetedPiece.color !== attackerColor;
 }
 
+Board.prototype.isPieceThreatened = function(coords) {
+    
+}
+
+Board.prototype.whoIsWinning = function() {
+    var pointsForBlack = 0;
+    var pointsForWhite = 0;
+    for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+            var piece = this.contents[j][i];
+            if (!piece.isEmpty()) {
+                if (piece.color === WHITE) {
+                    pointsForWhite += getPieceValue(piece);
+                } else {
+                    pointsForBlack += getPieceValue(piece);
+                }
+            }
+        }
+    }
+    var diff = pointsForWhite - pointsForBlack;
+    if (diff >= 0) {
+        return {who: WHITE, difference: diff};
+    } else {
+        return {who: BLACK, difference: -diff};
+    }
+}
+
+Board.prototype.whoIsInTheLead = function() {
+    var results = this.whoIsWinning();
+    if (results.difference >= 200) {
+        return results.who;
+    } else {
+        return NEITHER;
+    }
+}
+
 function getPlayer(playerType, isCapitalized) {
     if (playerType === WHITE) {
         return isCapitalized ? "White" : "white";
@@ -316,6 +352,10 @@ function getPlayer(playerType, isCapitalized) {
 
 function getOppositePlayer(playerType, isCapitalized) {
     return playerType === WHITE ? getPlayer(BLACK, isCapitalized) : getPlayer(WHITE, isCapitalized);
+}
+
+function getOppositeColor(playerColor) {
+    return playerColor === WHITE ? BLACK : WHITE;
 }
 
 function finalizeLegalMoves(currentMoves, attackerColor) {
@@ -512,8 +552,11 @@ function getPieceValue(piece) {
         case BISHOP:
         case KNIGHT:
             return 350;
+        case PAWN:
+            return 100
         default:
-            return 100;
+            /* Empty pieces are worth 0. */
+            return 0;
     }
 }
 
@@ -532,10 +575,6 @@ function getPieceName(piece) {
         default:
             return "pawn";
     }
-}
-
-function isPieceThreatened(coords, board) {
-    
 }
 
 function aiSayComment(comment, hasNoBreak, player) {
@@ -573,7 +612,7 @@ function commentate(fromLocation, toLocation, currentPlayer, movedPiece, killedP
             if (killedPiece.type === QUEEN) {
                 aiSayComment(player + " uses the king in order to capture " + otherPlayer + "'s queen! Uh oh!", true);
             } else {
-                aiSayComment(player + " uses the king in battle to capture a " + otherPiece + "!", true);
+                aiSayComment(player + " uses the king in battle to capture a " + otherPieceName + "!", true);
             }
         } else if (killedPiece.type === QUEEN) {
             if (movedPiece.type === QUEEN) {
@@ -692,6 +731,14 @@ function commentate(fromLocation, toLocation, currentPlayer, movedPiece, killedP
     } else {
         aiSayComment("A move has been made.", true);
     }
+    var leader = g_board.whoIsInTheLead();
+    if (leader === WHITE) {
+        aiSayComment("White is in the lead.", true);
+    } else if (leader === BLACK) {
+        aiSayComment("Black is in the lead.", true);
+    } else {
+        aiSayComment("Neither player is in the lead.", true);
+    }
     if (currentPlayer === WHITE) {
         aiSayComment("It is now black's turn.");
     } else {
@@ -742,7 +789,7 @@ function toggleSquare(squareString) {
         return;
     }
     var square = document.getElementById(squareString);
-    if (square.className === "selected_tile") {
+    if (square.className === "selected_tile" || square.className === "opponents_selected_tile") {
         /* Turn off the square that's selected: */
         square.className = getTileColor(getBaseColor(squareString));
         g_currentlySelectedSquareString = null;
@@ -754,14 +801,22 @@ function toggleSquare(squareString) {
         if (g_currentlySelectedSquareString !== null) {
             toggleSquare(g_currentlySelectedSquareString);
         }
-        square.className = "selected_tile";
+        var selectedTileColor = g_board.get(squareString).color;
+        var isSelectingOpponentPiece = selectedTileColor === getOppositeColor(g_whoseMove);
+        if (isSelectingOpponentPiece) {
+            square.className = "opponents_selected_tile";
+        } else {
+            square.className = "selected_tile";
+        }
         g_currentlySelectedSquareString = squareString;
         /* Now it's time to get our possible moves. */
         var attacker = g_board.get(squareString);
         var possibleMoves = attacker.legalMoves(squareString);
         var actualMoves = finalizeLegalMoves(possibleMoves, attacker.color);
-        /* Then display possible moves. */
-        displayPossibleMoves(actualMoves);
+        /* Then display possible moves, but only if not selecting an opponent's piece. */
+        if (!isSelectingOpponentPiece) {
+            displayPossibleMoves(actualMoves);
+        }
         /* Do not destroy the move-to board, since it will be needed for the next isMoveTo. */
     }
 }
