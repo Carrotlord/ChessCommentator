@@ -28,6 +28,8 @@ var g_whiteFirstTurn = true;
 var g_blackFirstTurn = true;
 var g_lastChoice = -1;
 var g_wasPawnPromoted = false;
+var g_whiteKingMoved = false;
+var g_blackKingMoved = false;
 
 function Piece(color, type) {
     this.type = type;
@@ -49,9 +51,34 @@ Piece.prototype.toString = function toString() {
     return (this.color === WHITE ? "White" : "Black") + " " + getPieceName(this);
 }
 
+function canCastleFar(color) {
+    if (color === WHITE) {
+        return (!g_whiteKingMoved) &&
+               g_board.isEmptyAt("b8") && g_board.isEmptyAt("c8") && g_board.isEmptyAt("d8") &&
+               g_board.isPieceThreatened(getCoords("c8"), WHITE).isSafe &&
+               g_board.isPieceThreatened(getCoords("d8"), WHITE).isSafe;
+    } else {
+        return (!g_blackKingMoved) &&
+               g_board.isEmptyAt("b1") && g_board.isEmptyAt("c1") && g_board.isEmptyAt("d1") &&
+               g_board.isPieceThreatened(getCoords("c1"), BLACK).isSafe &&
+               g_board.isPieceThreatened(getCoords("d1"), BLACK).isSafe;
+    }
+}
+
 function getKingMoves(i, j) {
-    return [[i - 1, j - 1], [i - 1, j + 1], [i + 1, j - 1], [i + 1, j + 1],
-            [i, j + 1], [i + 1, j], [i, j - 1], [i - 1, j]];
+    var moves = [[i - 1, j - 1], [i - 1, j + 1], [i + 1, j - 1], [i + 1, j + 1],
+                 [i, j + 1], [i + 1, j], [i, j - 1], [i - 1, j]];
+    var color = g_board.getAt(i, j).color;
+    if (color === WHITE) {
+        if (canCastleFar(WHITE)) {
+            moves.push([i - 2, j]);
+        }
+    } else {
+        if (canCastleFar(BLACK)) {
+            moves.push([i - 2, j]);
+        }
+    }
+    return moves;
 }
 
 function getKnightMoves(i, j) {
@@ -338,13 +365,21 @@ Board.prototype.isConsumable = function isConsumable(location, attackerColor) {
     return this.isEmptyAt(location) || targetedPiece.color !== attackerColor;
 }
 
-Board.prototype.isPieceThreatened = function(coords) {
+function isUndefined(obj) {
+    return typeof obj === "undefined";
+}
+
+Board.prototype.isPieceThreatened = function(coords, color) {
     var Threatener = function(piece, coords) {
         this.piece = piece;
         this.coords = coords;
     }
     var threat = {isSafe: true, opponentPieces: [], threatenedPiece: this.getAt(coords[0], coords[1])};
-    var whosePerspective = threat.threatenedPiece.color;
+    if (!isUndefined(color)) {
+        var whosePerspective = color;
+    } else {
+        var whosePerspective = threat.threatenedPiece.color;
+    }
     var currentLocation = coordsToLocation(coords);
     if (whosePerspective === NEITHER) {
         return threat;
@@ -987,6 +1022,36 @@ function toggleSquare(squareString) {
                 toSquare.appendChild(generateHTMLPiece(movingPiece));
             }
             moveSucceeded = true;
+            if (movingPiece.type === KING) {
+                if (movingPiece.color === BLACK) {
+                    g_blackKingMoved = true;
+                } else {
+                    g_whiteKingMoved = true;
+                }
+                var fromCoords = getCoords(fromLocation);
+                var toCoords = getCoords(toLocation);
+                if ((fromCoords[0] - toCoords[0]) === 2) {
+                    /* The king has castled far, move the rook: */
+                    if (movingPiece.color === WHITE) {
+                        removeAllChildren(document.getElementById("a8"));
+                        var newRookSquare = document.getElementById("d8");
+                        newRookSquare.appendChild(generateHTMLPiece(new Piece(WHITE, ROOK)));
+                        g_board.set("d8", new Piece(WHITE, ROOK));
+                    } else {
+                        removeAllChildren(document.getElementById("a1"));
+                        var newRookSquare = document.getElementById("d1");
+                        newRookSquare.appendChild(generateHTMLPiece(new Piece(BLACK, ROOK)));
+                        g_board.set("d1", new Piece(BLACK, ROOK));
+                    }
+                } else if ((fromCoords[0] - toCoords[0]) === -2) {
+                    /* The king has castled close, move the rook: */
+                    if (movingPiece.color === WHITE) {
+                    
+                    } else {
+                    
+                    }
+                }
+            }
         }
         g_moveToBoard = makeEmptyMoveToBoard();
         /* Doing the next line is okay because g_moveToBoard has been destroyed. */
