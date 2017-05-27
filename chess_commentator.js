@@ -30,6 +30,10 @@ var g_lastChoice = -1;
 var g_wasPawnPromoted = false;
 var g_whiteKingMoved = false;
 var g_blackKingMoved = false;
+var g_whiteLeftRookMoved = false;
+var g_whiteRightRookMoved = false;
+var g_blackLeftRookMoved = false;
+var g_blackRightRookMoved = false;
 
 function Piece(color, type) {
     this.type = type;
@@ -53,15 +57,33 @@ Piece.prototype.toString = function toString() {
 
 function canCastleFar(color) {
     if (color === WHITE) {
-        return (!g_whiteKingMoved) &&
+        return (!g_whiteKingMoved) && (!g_whiteLeftRookMoved) &&
                g_board.isEmptyAt("b8") && g_board.isEmptyAt("c8") && g_board.isEmptyAt("d8") &&
                g_board.isPieceThreatened(getCoords("c8"), WHITE).isSafe &&
-               g_board.isPieceThreatened(getCoords("d8"), WHITE).isSafe;
+               g_board.isPieceThreatened(getCoords("d8"), WHITE).isSafe &&
+               (!g_board.isKingInCheck(WHITE));
     } else {
-        return (!g_blackKingMoved) &&
+        return (!g_blackKingMoved) && (!g_blackLeftRookMoved) &&
                g_board.isEmptyAt("b1") && g_board.isEmptyAt("c1") && g_board.isEmptyAt("d1") &&
                g_board.isPieceThreatened(getCoords("c1"), BLACK).isSafe &&
-               g_board.isPieceThreatened(getCoords("d1"), BLACK).isSafe;
+               g_board.isPieceThreatened(getCoords("d1"), BLACK).isSafe &&
+               (!g_board.isKingInCheck(BLACK));
+    }
+}
+
+function canCastleClose(color) {
+    if (color === WHITE) {
+        return (!g_whiteKingMoved) && (!g_whiteRightRookMoved) &&
+               g_board.isEmptyAt("f8") && g_board.isEmptyAt("g8") &&
+               g_board.isPieceThreatened(getCoords("f8"), WHITE).isSafe &&
+               g_board.isPieceThreatened(getCoords("g8"), WHITE).isSafe &&
+               (!g_board.isKingInCheck(WHITE));
+    } else {
+        return (!g_blackKingMoved) && (!g_blackRightRookMoved) &&
+               g_board.isEmptyAt("f1") && g_board.isEmptyAt("g1") &&
+               g_board.isPieceThreatened(getCoords("f1"), BLACK).isSafe &&
+               g_board.isPieceThreatened(getCoords("g1"), BLACK).isSafe &&
+               (!g_board.isKingInCheck(BLACK));
     }
 }
 
@@ -73,9 +95,15 @@ function getKingMoves(i, j) {
         if (canCastleFar(WHITE)) {
             moves.push([i - 2, j]);
         }
+        if (canCastleClose(WHITE)) {
+            moves.push([i + 2, j]);
+        }
     } else {
         if (canCastleFar(BLACK)) {
             moves.push([i - 2, j]);
+        }
+        if (canCastleClose(BLACK)) {
+            moves.push([i + 2, j]);
         }
     }
     return moves;
@@ -1046,9 +1074,29 @@ function toggleSquare(squareString) {
                 } else if ((fromCoords[0] - toCoords[0]) === -2) {
                     /* The king has castled close, move the rook: */
                     if (movingPiece.color === WHITE) {
-                    
+                        removeAllChildren(document.getElementById("h8"));
+                        var newRookSquare = document.getElementById("f8");
+                        newRookSquare.appendChild(generateHTMLPiece(new Piece(WHITE, ROOK)));
+                        g_board.set("f8", new Piece(WHITE, ROOK));
                     } else {
-                    
+                        removeAllChildren(document.getElementById("h1"));
+                        var newRookSquare = document.getElementById("f1");
+                        newRookSquare.appendChild(generateHTMLPiece(new Piece(BLACK, ROOK)));
+                        g_board.set("f1", new Piece(BLACK, ROOK));
+                    }
+                }
+            } else if (movingPiece.type === ROOK) {
+                if (movingPiece.color === BLACK) {
+                    if (fromLocation === "a1") {
+                        g_blackLeftRookMoved = true;
+                    } else {
+                        g_blackRightRookMoved = true;
+                    }
+                } else {
+                    if (fromLocation === "a8") {
+                        g_whiteLeftRookMoved = true;
+                    } else {
+                        g_whiteRightRookMoved = true;
                     }
                 }
             }
