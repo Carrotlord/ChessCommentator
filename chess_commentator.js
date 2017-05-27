@@ -87,9 +87,13 @@ function canCastleClose(color) {
     }
 }
 
-function getKingMoves(i, j) {
+function getKingMoves(i, j, abbreviated) {
     var moves = [[i - 1, j - 1], [i - 1, j + 1], [i + 1, j - 1], [i + 1, j + 1],
                  [i, j + 1], [i + 1, j], [i, j - 1], [i - 1, j]];
+    if (abbreviated) {
+        /* Avoid a recursive cycle due to castling check: */
+        return moves;
+    }
     var color = g_board.getAt(i, j).color;
     if (color === WHITE) {
         if (canCastleFar(WHITE)) {
@@ -246,7 +250,7 @@ function modifyPawnMoves(givenMoves, i, j, pawnColor, board) {
 }
 
 /* TODO: Finish implementing this (requires castling, en passant) */
-Piece.prototype.legalMoves = function legalMoves(location, board) {
+Piece.prototype.legalMoves = function legalMoves(location, board, abbreviated) {
     if (!board) {
         board = g_board;
     }
@@ -305,7 +309,7 @@ Piece.prototype.legalMoves = function legalMoves(location, board) {
         var collectedCoords = getKnightMoves(i, j);
         return toLegalLocations(collectedCoords);
     } else if (this.type === KING) {
-        var collectedCoords = getKingMoves(i, j);
+        var collectedCoords = getKingMoves(i, j, abbreviated);
         return toLegalLocations(collectedCoords);
     }
     return [];
@@ -417,7 +421,7 @@ Board.prototype.isPieceThreatened = function(coords, color) {
             var potentialThreat = this.contents[j][i];
             if (!potentialThreat.isEmpty() && potentialThreat.color !== whosePerspective) {
                 /* Enemy piece detected. Can it attack our square? */
-                var legalMoves = potentialThreat.legalMoves(coordsToLocation([i, j]), this);
+                var legalMoves = potentialThreat.legalMoves(coordsToLocation([i, j]), this, true);
                 var actualLegalMoves = finalizeLegalMoves(legalMoves, getOppositeColor(whosePerspective), this);
                 //console.log("Checking... " + potentialThreat.toString() + " at (" + [i,j] + ")");
                 //console.log("Moves: [" + legalMoves + "]");
