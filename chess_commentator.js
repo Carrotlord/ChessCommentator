@@ -1074,6 +1074,15 @@ function commentate(fromLocation, toLocation, currentPlayer, movedPiece, killedP
     }
 }
 
+function wasMoveDiagonal(fromCoords, toCoords) {
+    var i = fromCoords[0];
+    var j = fromCoords[1];
+    var iPrime = toCoords[0];
+    var jPrime = toCoords[1];
+    return Math.abs(j - jPrime) === 1 &&
+           Math.abs(i - iPrime) === 1;
+}
+
 function toggleSquare(squareString) {
     clearAllMoveTo();
     if (isMoveTo(squareString)) {
@@ -1177,6 +1186,21 @@ function toggleSquare(squareString) {
                 if ((movingPiece.color === WHITE && difference === 2) ||
                     (movingPiece.color === BLACK && difference === -2)) {
                     g_enPassantable.push(toCoords);
+                }
+                /* Was this move an en passant move? */
+                var wasEnPassant = wasMoveDiagonal(fromCoords, toCoords) &&
+                                   killedPiece.equals(new Piece(NEITHER, EMPTY));
+                if (wasEnPassant) {
+                    /* Remove the pawn that was captured. */
+                    var iPrime = toCoords[0];
+                    var jPrime = toCoords[1];
+                    if (movingPiece.color === WHITE) {
+                        var capturedLocation = coordsToLocation([iPrime, jPrime + 1]);
+                    } else {
+                        var capturedLocation = coordsToLocation([iPrime, jPrime - 1]);
+                    }
+                    removeAllChildren(document.getElementById(capturedLocation));
+                    g_board.set(capturedLocation, new Piece(NEITHER, EMPTY));
                 }
             }
         }
