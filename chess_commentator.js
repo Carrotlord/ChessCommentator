@@ -203,6 +203,61 @@ function getRookMoves(i, j, board) {
     return collectedCoords;
 }
 
+function horizontallyAdjacent(i, j, otherCoords) {
+    /* Returns a list of coordinates that are horizontally
+     * adjacent to the current coordinates.
+     */
+    var results = [];
+    for (var k = 0; k < otherCoords.length; k++) {
+        var coords = otherCoords[k];
+        var iPrime = coords[0];
+        var jPrime = coords[1];
+        if (jPrime === j && Math.abs(iPrime - i) === 1) {
+            results.push(coords);
+        }
+    }
+    return results;
+}
+
+function removeSameColor(color, otherCoords) {
+    /* Removes coordinates which contain a piece of
+     * the same color as the given color.
+     */
+    var results = [];
+    for (var k = 0; k < otherCoords.length; k++) {
+        var coords = otherCoords[k];
+        var i = coords[0];
+        var j = coords[1];
+        if (g_board.getAt(i, j).color !== color) {
+            results.push(coords);
+        }
+    }
+    return results;
+}
+
+function generateEnPassantMoves(i, j, color) {
+    /* Given a pawn at (i, j), returns all possible
+     * en passant moves that the pawn can make, if
+     * there are any.
+     */
+    var results = [];
+    var otherColorPawns = removeSameColor(color, g_enPassantable);
+    var adjacent = horizontallyAdjacent(i, j, otherColorPawns);
+    for (var k = 0; k < adjacent.length; k++) {
+        var coords = adjacent[k];
+        var iPrime = coords[0];
+        var jPrime = coords[1];
+        if (color === WHITE) {
+            /* En passant against black. */
+            results.push([iPrime, jPrime - 1]);
+        } else {
+            /* En passant against white. */
+            results.push([iPrime, jPrime + 1]);
+        }
+    }
+    return results;
+}
+
 function modifyPawnMoves(givenMoves, i, j, pawnColor, board) {
     if (!board) {
         board = g_board;
@@ -247,6 +302,8 @@ function modifyPawnMoves(givenMoves, i, j, pawnColor, board) {
             actualMoves.push([i - 1, j - 1]);
         }
     }
+    enPassantMoves = generateEnPassantMoves(i, j, pawnColor);
+    actualMoves = actualMoves.concat(enPassantMoves);
     return actualMoves;
 }
 
@@ -1055,14 +1112,18 @@ function toggleSquare(squareString) {
                 toSquare.appendChild(generateHTMLPiece(movingPiece));
             }
             moveSucceeded = true;
+            var fromCoords = getCoords(fromLocation);
+            var toCoords = getCoords(toLocation);
+            /* En passant must be taken immediately, or else
+             * the opportunity to do so is lost on the next turn:
+             */
+            g_enPassantable = [];
             if (movingPiece.type === KING) {
                 if (movingPiece.color === BLACK) {
                     g_blackKingMoved = true;
                 } else {
                     g_whiteKingMoved = true;
                 }
-                var fromCoords = getCoords(fromLocation);
-                var toCoords = getCoords(toLocation);
                 if ((fromCoords[0] - toCoords[0]) === 2) {
                     /* The king has castled far, move the rook: */
                     if (movingPiece.color === WHITE) {
@@ -1107,6 +1168,15 @@ function toggleSquare(squareString) {
                     } else {
                         g_whiteRightRookMoved = true;
                     }
+                }
+            } else if (movingPiece.type === PAWN) {
+                /* Track pawns that are candidates for being captured by
+                 * en passant.
+                 */
+                var difference = fromCoords[1] - toCoords[1];
+                if ((movingPiece.color === WHITE && difference === 2) ||
+                    (movingPiece.color === BLACK && difference === -2)) {
+                    g_enPassantable.push(toCoords);
                 }
             }
         }
