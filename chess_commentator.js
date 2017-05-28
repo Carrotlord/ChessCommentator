@@ -34,6 +34,7 @@ var g_whiteLeftRookMoved = false;
 var g_whiteRightRookMoved = false;
 var g_blackLeftRookMoved = false;
 var g_blackRightRookMoved = false;
+var g_enPassantable = [];
 
 function Piece(color, type) {
     this.type = type;
@@ -1069,11 +1070,13 @@ function toggleSquare(squareString) {
                         var newRookSquare = document.getElementById("d8");
                         newRookSquare.appendChild(generateHTMLPiece(new Piece(WHITE, ROOK)));
                         g_board.set("d8", new Piece(WHITE, ROOK));
+                        g_board.set("a8", new Piece(NEITHER, EMPTY));
                     } else {
                         removeAllChildren(document.getElementById("a1"));
                         var newRookSquare = document.getElementById("d1");
                         newRookSquare.appendChild(generateHTMLPiece(new Piece(BLACK, ROOK)));
                         g_board.set("d1", new Piece(BLACK, ROOK));
+                        g_board.set("a1", new Piece(NEITHER, EMPTY));
                     }
                 } else if ((fromCoords[0] - toCoords[0]) === -2) {
                     /* The king has castled close, move the rook: */
@@ -1082,11 +1085,13 @@ function toggleSquare(squareString) {
                         var newRookSquare = document.getElementById("f8");
                         newRookSquare.appendChild(generateHTMLPiece(new Piece(WHITE, ROOK)));
                         g_board.set("f8", new Piece(WHITE, ROOK));
+                        g_board.set("h8", new Piece(NEITHER, EMPTY));
                     } else {
                         removeAllChildren(document.getElementById("h1"));
                         var newRookSquare = document.getElementById("f1");
                         newRookSquare.appendChild(generateHTMLPiece(new Piece(BLACK, ROOK)));
                         g_board.set("f1", new Piece(BLACK, ROOK));
+                        g_board.set("h1", new Piece(NEITHER, EMPTY));
                     }
                 }
             } else if (movingPiece.type === ROOK) {
