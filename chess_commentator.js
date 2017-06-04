@@ -307,7 +307,6 @@ function modifyPawnMoves(givenMoves, i, j, pawnColor, board) {
     return actualMoves;
 }
 
-/* TODO: Finish implementing this (requires castling, en passant) */
 Piece.prototype.legalMoves = function legalMoves(location, board, abbreviated) {
     if (!board) {
         board = g_board;
@@ -1083,6 +1082,54 @@ function wasMoveDiagonal(fromCoords, toCoords) {
            Math.abs(i - iPrime) === 1;
 }
 
+function getAllLegalMoves(location, board, whoseMove) {
+    var piece = board.get(location);
+    if (piece.color !== whoseMove) {
+        return [];
+    }
+    var legalMoves = piece.legalMoves(location, board, true);
+    var actualLegalMoves = finalizeLegalMoves(legalMoves, piece.color, board);
+    return actualLegalMoves;
+}
+
+function makeVirtualMove(fromLocation, toLocation, virtualBoard) {
+    /* Makes a move on a virtual board,
+     * to determine conditions such as checkmate or stalemate.
+     */
+    var movingPiece = virtualBoard.get(fromLocation);
+    virtualBoard.set(toLocation, movingPiece);
+    virtualBoard.set(fromLocation, new Piece(NEITHER, EMPTY));
+}
+
+function isStalemate(whoseMove) {
+    /* Returns true if there are no legal moves
+     * to be made.
+     */
+    for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+            var location = coordsToLocation([i, j]);
+            var moves = getAllLegalMoves(location, g_board, whoseMove);
+            for (var k = 0; k < moves.length; k++) {
+                var virtualBoard = copyBoard(g_board);
+                var currentMove = moves[k];
+                makeVirtualMove(location, currentMove, virtualBoard);
+                if (!virtualBoard.isKingInCheck(whoseMove)) {
+                    /* If the king is not in check, this must be a
+                     * legal move. Therefore, stalemate has not happened.
+                     */
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+function sayBlue(comment) {
+    /* Says comment in a blue color: */
+    aiSayComment("<span style=\"font-weight:bold;color:dodgerblue;\">" + comment + "</span>");
+}
+
 function toggleSquare(squareString) {
     clearAllMoveTo();
     if (isMoveTo(squareString)) {
@@ -1228,6 +1275,19 @@ function toggleSquare(squareString) {
                 g_whoseMove = BLACK;
             } else {
                 g_whoseMove = WHITE;
+            }
+            if (isStalemate(g_whoseMove)) {
+                if (g_board.isKingInCheck(g_whoseMove)) {
+                    /* There are no legal moves, and the king is in
+                     * check, so this is checkmate:
+                     */
+                    sayBlue("Checkmate! " + getOppositePlayer(g_whoseMove, true) + " has won the game!");
+                } else {
+                    /* There are no legal moves, and the king is not
+                     * in check, so this is a stalemate:
+                     */
+                    sayBlue("Stalemate! " + getPlayer(g_whoseMove, true) + " has no more legal moves!");
+                }
             }
         }
         return;
