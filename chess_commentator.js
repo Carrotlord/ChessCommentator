@@ -35,6 +35,7 @@ var g_whiteRightRookMoved = false;
 var g_blackLeftRookMoved = false;
 var g_blackRightRookMoved = false;
 var g_enPassantable = [];
+var g_gameOver = false;
 
 function Piece(color, type) {
     this.type = type;
@@ -1288,12 +1289,14 @@ function toggleSquare(squareString) {
                      */
                     sayBlue("Stalemate! " + getPlayer(g_whoseMove, true) + " has no more legal moves!");
                 }
+                g_gameOver = true;
             }
         }
         return;
     }
     var square = document.getElementById(squareString);
-    if (square.className === "selected_tile" || square.className === "opponents_selected_tile") {
+    if (square.className === "selected_tile" || square.className === "opponents_selected_tile" ||
+        square.className === "game_over_tile") {
         /* Turn off the square that's selected: */
         square.className = getTileColor(getBaseColor(squareString));
         g_currentlySelectedSquareString = null;
@@ -1307,7 +1310,9 @@ function toggleSquare(squareString) {
         }
         var selectedTileColor = g_board.get(squareString).color;
         var isSelectingOpponentPiece = selectedTileColor === getOppositeColor(g_whoseMove);
-        if (isSelectingOpponentPiece) {
+        if (g_gameOver) {
+            square.className = "game_over_tile";
+        } else if (isSelectingOpponentPiece) {
             square.className = "opponents_selected_tile";
         } else {
             square.className = "selected_tile";
@@ -1318,7 +1323,7 @@ function toggleSquare(squareString) {
         var possibleMoves = attacker.legalMoves(squareString);
         var actualMoves = finalizeLegalMoves(possibleMoves, attacker.color);
         /* Then display possible moves, but only if not selecting an opponent's piece. */
-        if (!isSelectingOpponentPiece) {
+        if (!isSelectingOpponentPiece && !g_gameOver) {
             displayPossibleMoves(actualMoves);
         }
         /* Do not destroy the move-to board, since it will be needed for the next isMoveTo. */

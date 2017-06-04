@@ -24,6 +24,10 @@ td, th {
     background-color: maroon;
 }
 
+.game_over_tile {
+    background-color: #808080;
+}
+
 .blue_tile {
     background-color: #b0c4de;
 }
