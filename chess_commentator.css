@@ -36,6 +36,13 @@ td, th {
     background-color: white;
 }
 
+#chatroom_holder {
+    vertical-align: top;
+    text-align: left;
+    font-family: Calibri,Consolas,monospace;
+    border: none;
+}
+
 #chatroom {
     vertical-align: top;
     text-align: left;

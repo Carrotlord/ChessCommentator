@@ -37,6 +37,35 @@ var g_blackRightRookMoved = false;
 var g_enPassantable = [];
 var g_gameOver = false;
 
+function resetAll() {
+    g_currentlySelectedSquareString = null;
+    g_board = new Board();
+    g_moveToBoard = makeEmptyMoveToBoard();
+    g_whoseMove = WHITE;
+    g_lastCommentHasNoBreak = false;
+    g_whiteFirstTurn = true;
+    g_blackFirstTurn = true;
+    g_lastChoice = -1;
+    g_wasPawnPromoted = false;
+    g_whiteKingMoved = false;
+    g_blackKingMoved = false;
+    g_whiteLeftRookMoved = false;
+    g_whiteRightRookMoved = false;
+    g_blackLeftRookMoved = false;
+    g_blackRightRookMoved = false;
+    g_enPassantable = [];
+    g_gameOver = false;
+    reloadGraphical();
+}
+
+function reloadGraphical() {
+    for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+            updateGraphicalSquare([i, j]);
+        }
+    }
+}
+
 function Piece(color, type) {
     this.type = type;
     this.color = color;
@@ -811,7 +840,8 @@ function getEntityReference(piece) {
                     return ERROR_REFERENCE;
             }
         default:
-            return ERROR_REFERENCE;
+            /* Empty square */
+            return "";
     }
 }
 
