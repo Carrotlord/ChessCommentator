@@ -56,12 +56,27 @@ function resetAll() {
     g_enPassantable = [];
     g_gameOver = false;
     reloadGraphical();
+    resetAllTiles();
+    aiSayComment("You have started a new game.");
 }
 
 function reloadGraphical() {
     for (var i = 0; i < 8; i++) {
         for (var j = 0; j < 8; j++) {
             updateGraphicalSquare([i, j]);
+        }
+    }
+}
+
+function resetAllTiles() {
+    var columns = "abcdefgh";
+    var rows = "12345678";
+    for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+            var squareString = columns[i] + rows[j];
+            var square = document.getElementById(squareString);
+            /* Turn off any squares that are selected: */
+            square.className = getTileColor(getBaseColor(squareString));
         }
     }
 }
