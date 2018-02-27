@@ -1,20 +1,40 @@
+function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 function startGameAgainstAI(level) {
     resetAll();
     if (level === "beginner") {
         g_against = AI_BEGINNER;
-        g_aiPlayer = new AIPlayer();
+        g_aiPlayer = new AIPlayer(level);
         aiSayComment("You are now playing against the beginner AI.");
     }
 }
 
-function AIPlayer() {
+function AIPlayer(level) {
+    this.level = level;
 }
 
 AIPlayer.prototype.nextMove = function(board) {
-    return {
-        from: "e2",
-        to: "e4"
-    };
+    if (this.level === "beginner") {
+        console.log(getAllLegalMoves("e2", board, BLACK));
+        var allMoves = [];
+        var currentSquare = null;
+        var columns = "abcdefgh";
+        var rows = "12345678";
+        var moves = [];
+        for (var i = 0; i < 8; i++) {
+            for (var j = 0; j < 8; j++) {
+                currentSquare = columns[i] + rows[j];
+                moves = getAllLegalMoves(currentSquare, board, BLACK);
+                for (var k = 0; k < moves.length; k++) {
+                    allMoves.push({from: currentSquare, to: moves[k]});
+                }
+            }
+        }
+        var selectedMove = allMoves[randInt(0, allMoves.length - 1)];
+        return selectedMove;
+    }
 }
 
 function requestAIMove(aiPlayer, board) {
