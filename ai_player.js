@@ -20,7 +20,6 @@ function isMoveAcceptable(move, board) {
 
 AIPlayer.prototype.nextMove = function(board) {
     if (this.level === "beginner") {
-        console.log(getAllLegalMoves("e2", board, BLACK));
         var allMoves = [];
         var currentSquare = null;
         var columns = "abcdefgh";
@@ -48,6 +47,8 @@ AIPlayer.prototype.nextMove = function(board) {
             return selectedMove;
         }
     }
+    /* Return a dummy value */
+    return {from: "a1", to: "a1"}
 }
 
 function requestAIMove(aiPlayer, board) {
