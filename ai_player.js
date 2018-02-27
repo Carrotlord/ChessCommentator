@@ -1,7 +1,3 @@
-function randInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
 function startGameAgainstAI(level) {
     resetAll();
     if (level === "beginner") {
@@ -15,6 +11,13 @@ function AIPlayer(level) {
     this.level = level;
 }
 
+/** Prevents moves that result in check after the move is performed. */
+function isMoveAcceptable(move, board) {
+    var virtualBoard = copyBoard(board);
+    makeVirtualMove(move.from, move.to, virtualBoard);
+    return !virtualBoard.isKingInCheck(BLACK);
+}
+
 AIPlayer.prototype.nextMove = function(board) {
     if (this.level === "beginner") {
         console.log(getAllLegalMoves("e2", board, BLACK));
@@ -23,17 +26,27 @@ AIPlayer.prototype.nextMove = function(board) {
         var columns = "abcdefgh";
         var rows = "12345678";
         var moves = [];
+        var currentMove = null;
         for (var i = 0; i < 8; i++) {
             for (var j = 0; j < 8; j++) {
                 currentSquare = columns[i] + rows[j];
                 moves = getAllLegalMoves(currentSquare, board, BLACK);
                 for (var k = 0; k < moves.length; k++) {
-                    allMoves.push({from: currentSquare, to: moves[k]});
+                    currentMove = {from: currentSquare, to: moves[k]};
+                    if (isMoveAcceptable(currentMove, board)) {
+                        allMoves.push(currentMove);
+                    }
                 }
             }
         }
-        var selectedMove = allMoves[randInt(0, allMoves.length - 1)];
-        return selectedMove;
+        if (allMoves.length === 0) {
+            aiSayComment("Player black gives up! No legal moves!");
+        } else {
+            var selectedMove = allMoves[randInt(0, allMoves.length - 1)];
+            commentate(selectedMove.from, selectedMove.to, BLACK,
+                       board.get(selectedMove.from), board.get(selectedMove.to));
+            return selectedMove;
+        }
     }
 }
 
