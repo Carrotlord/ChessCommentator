@@ -41,6 +41,7 @@ var g_enPassantable = [];
 var g_gameOver = false;
 var g_against = HUMAN;
 var g_aiPlayer = null;
+var g_lastAIMove = null;
 
 function resetAll() {
     g_currentlySelectedSquareString = null;
@@ -62,6 +63,7 @@ function resetAll() {
     g_gameOver = false;
     g_against = HUMAN;
     g_aiPlayer = null;
+    g_lastAIMove = null;
     reloadGraphical();
     resetAllTiles();
     aiSayComment("You have started a new game.");

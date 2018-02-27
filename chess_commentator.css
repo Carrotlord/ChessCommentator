@@ -36,6 +36,10 @@ td, th {
     background-color: white;
 }
 
+.opponent_moved_tile {
+    background-color: green;
+}
+
 #chatroom_holder {
     vertical-align: top;
     text-align: left;

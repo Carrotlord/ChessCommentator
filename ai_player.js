@@ -49,4 +49,13 @@ function requestAIMove(aiPlayer, board) {
     removeAllChildren(fromSquare);
     removeAllChildren(toSquare);
     toSquare.appendChild(generateHTMLPiece(movingPiece));
+    fromSquare.className = "opponent_moved_tile";
+    toSquare.className = "opponent_moved_tile";
+    if (g_lastAIMove !== null) {
+        var previousFromSquare = document.getElementById(g_lastAIMove.from);
+        var previousToSquare = document.getElementById(g_lastAIMove.to);
+        previousFromSquare.className = getTileColor(getBaseColor(g_lastAIMove.from));
+        previousToSquare.className = getTileColor(getBaseColor(g_lastAIMove.to));
+    }
+    g_lastAIMove = move;
 }
