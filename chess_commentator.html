@@ -6,6 +6,7 @@
 <title>Oliver's Chess Commentator</title>
 <link rel="stylesheet" type="text/css" href="chess_commentator.css">
 <script src="chess_commentator.js" type="text/javascript"></script>
+<script src="ai_player.js" type="text/javascript"></script>
 </head>
 
 <body onload="startUp();">
@@ -195,7 +196,7 @@
 <td id="chatroom_holder">
 <div>
 <button type="button" onclick="resetAll();">New Game (vs Human)</button>
-<button type="button">New Game (vs Beginner AI)</button>
+<button type="button" onclick="startGameAgainstAI('beginner');">New Game (vs Beginner AI)</button>
 <button type="button">New Game (vs Intermediate AI)</button>
 <button type="button">New Game (vs Advanced AI)</button>
 <hr>

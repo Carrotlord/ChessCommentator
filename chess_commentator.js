@@ -19,6 +19,9 @@ var MOVE_TO = 1;
 
 var PIECE_NOT_FOUND = "not_found";
 
+var HUMAN = "human";
+var AI_BEGINNER = "ai_beginner";
+
 var g_currentlySelectedSquareString = null;
 var g_board = new Board();
 var g_moveToBoard = makeEmptyMoveToBoard();
@@ -36,6 +39,8 @@ var g_blackLeftRookMoved = false;
 var g_blackRightRookMoved = false;
 var g_enPassantable = [];
 var g_gameOver = false;
+var g_against = HUMAN;
+var g_aiPlayer = null;
 
 function resetAll() {
     g_currentlySelectedSquareString = null;
@@ -55,6 +60,8 @@ function resetAll() {
     g_blackRightRookMoved = false;
     g_enPassantable = [];
     g_gameOver = false;
+    g_against = HUMAN;
+    g_aiPlayer = null;
     reloadGraphical();
     resetAllTiles();
     aiSayComment("You have started a new game.");
@@ -1335,6 +1342,11 @@ function toggleSquare(squareString) {
                     sayBlue("Stalemate! " + getPlayer(g_whoseMove, true) + " has no more legal moves!");
                 }
                 g_gameOver = true;
+            }
+            /* Let the AI player move: */
+            if (g_whoseMove === BLACK && g_against === AI_BEGINNER) {
+                requestAIMove(g_aiPlayer, g_board);
+                g_whoseMove = WHITE;
             }
         }
         return;
