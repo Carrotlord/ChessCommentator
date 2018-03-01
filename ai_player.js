@@ -37,10 +37,10 @@ function AIPlayer(level) {
 }
 
 /** Prevents moves that result in check after the move is performed. */
-function isMoveAcceptable(move, board) {
+function isMoveAcceptable(move, board, color) {
     var virtualBoard = copyBoard(board);
     makeVirtualMove(move.from, move.to, virtualBoard);
-    return !virtualBoard.isKingInCheck(BLACK);
+    return !virtualBoard.isKingInCheck(color);
 }
 
 function getAILegalMoves(board, color) {
@@ -56,7 +56,7 @@ function getAILegalMoves(board, color) {
             moves = getAllLegalMoves(currentSquare, board, color);
             for (var k = 0; k < moves.length; k++) {
                 currentMove = {from: currentSquare, to: moves[k]};
-                if (isMoveAcceptable(currentMove, board)) {
+                if (isMoveAcceptable(currentMove, board, color)) {
                     allMoves.push(currentMove);
                 }
             }
