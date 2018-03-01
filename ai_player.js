@@ -123,7 +123,10 @@ AIPlayer.prototype.negamax = function(board, depth, color, originalMove) {
             makeVirtualMove(currentMove.from, currentMove.to, nextBoard);
             result = this.negamax(nextBoard, depth - 1, getOppositeColor(color), currentMove);
             currentValue = -result.value;
-            if (bestValue === null || currentValue > bestValue) {
+            /* Select the best move.
+             * If this move is equally as good, select it with a 50% chance. */
+            if (bestValue === null || currentValue > bestValue ||
+                (currentValue === bestValue && randInt(0, 1) === 0)) {
                 bestValue = currentValue;
                 bestMove = currentMove;
             }
