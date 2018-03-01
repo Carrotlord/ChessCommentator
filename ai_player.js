@@ -5,28 +5,6 @@ function startGameAgainstAI(level) {
         aiSayComment("You are now playing against the beginner AI.");
     } else if (level === "intermediate") {
         g_against = AI_INTERMEDIATE;
-        var blackKing = new Piece(BLACK, KING);
-        var blackQueen = new Piece(BLACK, QUEEN);
-        var blackRook = new Piece(BLACK, ROOK);
-        var blackBishop = new Piece(BLACK, BISHOP);
-        var blackKnight = new Piece(BLACK, KNIGHT);
-        var blackPawn = new Piece(BLACK, PAWN);
-        var whiteKing = new Piece(WHITE, KING);
-        var whiteQueen = new Piece(WHITE, QUEEN);
-        var whiteRook = new Piece(WHITE, ROOK);
-        var whiteBishop = new Piece(WHITE, BISHOP);
-        var whiteKnight = new Piece(WHITE, KNIGHT);
-        var whitePawn = new Piece(WHITE, PAWN);
-        var emptyPiece = new Piece(NEITHER, EMPTY);
-        g_board.contents = [[emptyPiece, emptyPiece, blackQueen, emptyPiece, blackKing, emptyPiece, emptyPiece, emptyPiece],
-                            [emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece],
-                            [emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece],
-                            [emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece],
-                            [emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece],
-                            [emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece],
-                            [emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece, emptyPiece],
-                            [emptyPiece, emptyPiece, emptyPiece, whiteQueen, whiteKing, emptyPiece, emptyPiece, emptyPiece]];
-        reloadGraphical();
         aiSayComment("You are now playing against the intermediate AI.");
     }
     g_aiPlayer = new AIPlayer(level);
@@ -96,10 +74,8 @@ AIPlayer.prototype.nextMove = function(board) {
         }
         selectedMove = equalMoves[randInt(0, equalMoves.length - 1)];
     } else if (this.level === "intermediate") {
-        var result = this.negamax(board, 4, BLACK, []);
-        console.log(result.chain);
-        console.log(result.value);
-        selectedMove = result.chain[0];
+        var result = this.negamax(board, 2, BLACK, null);
+        selectedMove = result.move;
     }
     commentate(selectedMove.from, selectedMove.to, BLACK,
                board.get(selectedMove.from), board.get(selectedMove.to));
@@ -125,15 +101,14 @@ AIPlayer.prototype.evaluateBoard = function(board) {
     return points;
 }
 
-/* Warning: depth should be an even number */
-AIPlayer.prototype.negamax = function(board, depth, color, moveChain) {
+AIPlayer.prototype.negamax = function(board, depth, color, originalMove) {
     var moves = getAILegalMoves(board, color);
     if (depth <= 0 || moves.length === 0) {
         /* Evaluation is done, so return value of leaf node */
         if (color === WHITE) {
-            return {chain: moveChain, value: this.evaluateBoard(board)};
+            return {value: this.evaluateBoard(board), move: originalMove};
         } else {
-            return {chain: moveChain, value: -this.evaluateBoard(board)};
+            return {value: -this.evaluateBoard(board), move: originalMove};
         }
     } else {
         var bestValue = null;
@@ -146,16 +121,14 @@ AIPlayer.prototype.negamax = function(board, depth, color, moveChain) {
             currentMove = moves[i];
             nextBoard = copyBoard(board);
             makeVirtualMove(currentMove.from, currentMove.to, nextBoard);
-            currentMove.color = getPlayer(color);
-            result = this.negamax(nextBoard, depth - 1, getOppositeColor(color), moveChain.concat([currentMove]));
+            result = this.negamax(nextBoard, depth - 1, getOppositeColor(color), currentMove);
             currentValue = -result.value;
             if (bestValue === null || currentValue > bestValue) {
                 bestValue = currentValue;
                 bestMove = currentMove;
-                moveChain = result.chain;
             }
         }
-        return {chain: moveChain, value: bestValue};
+        return {value: bestValue, move: bestMove};
     }
 }
 
