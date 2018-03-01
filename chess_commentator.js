@@ -21,6 +21,7 @@ var PIECE_NOT_FOUND = "not_found";
 
 var HUMAN = "human";
 var AI_BEGINNER = "ai_beginner";
+var AI_INTERMEDIATE = "ai_intermediate";
 
 var g_currentlySelectedSquareString = null;
 var g_board = new Board();
@@ -1346,7 +1347,7 @@ function toggleSquare(squareString) {
                 g_gameOver = true;
             }
             /* Let the AI player move: */
-            if (g_whoseMove === BLACK && g_against === AI_BEGINNER) {
+            if (g_whoseMove === BLACK && g_against !== HUMAN) {
                 requestAIMove(g_aiPlayer, g_board);
                 g_whoseMove = WHITE;
             }

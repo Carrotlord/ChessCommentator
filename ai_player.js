@@ -2,9 +2,12 @@ function startGameAgainstAI(level) {
     resetAll();
     if (level === "beginner") {
         g_against = AI_BEGINNER;
-        g_aiPlayer = new AIPlayer(level);
         aiSayComment("You are now playing against the beginner AI.");
+    } else if (level === "intermediate") {
+        g_against = AI_INTERMEDIATE;
+        aiSayComment("You are now playing against the intermediate AI.");
     }
+    g_aiPlayer = new AIPlayer(level);
 }
 
 function AIPlayer(level) {
@@ -18,37 +21,83 @@ function isMoveAcceptable(move, board) {
     return !virtualBoard.isKingInCheck(BLACK);
 }
 
-AIPlayer.prototype.nextMove = function(board) {
-    if (this.level === "beginner") {
-        var allMoves = [];
-        var currentSquare = null;
-        var columns = "abcdefgh";
-        var rows = "12345678";
-        var moves = [];
-        var currentMove = null;
-        for (var i = 0; i < 8; i++) {
-            for (var j = 0; j < 8; j++) {
-                currentSquare = columns[i] + rows[j];
-                moves = getAllLegalMoves(currentSquare, board, BLACK);
-                for (var k = 0; k < moves.length; k++) {
-                    currentMove = {from: currentSquare, to: moves[k]};
-                    if (isMoveAcceptable(currentMove, board)) {
-                        allMoves.push(currentMove);
-                    }
+function getAILegalMoves(board) {
+    var allMoves = [];
+    var currentSquare = null;
+    var columns = "abcdefgh";
+    var rows = "12345678";
+    var moves = [];
+    var currentMove = null;
+    for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+            currentSquare = columns[i] + rows[j];
+            moves = getAllLegalMoves(currentSquare, board, BLACK);
+            for (var k = 0; k < moves.length; k++) {
+                currentMove = {from: currentSquare, to: moves[k]};
+                if (isMoveAcceptable(currentMove, board)) {
+                    allMoves.push(currentMove);
                 }
             }
         }
-        if (allMoves.length === 0) {
-            aiSayComment("Player black gives up! No legal moves!");
-        } else {
-            var selectedMove = allMoves[randInt(0, allMoves.length - 1)];
-            commentate(selectedMove.from, selectedMove.to, BLACK,
-                       board.get(selectedMove.from), board.get(selectedMove.to));
-            return selectedMove;
+    }
+    return allMoves;
+}
+
+AIPlayer.prototype.nextMove = function(board) {
+    var allMoves = getAILegalMoves(board);
+    var selectedMove = {from: "a1", to: "a1"};
+    if (allMoves.length === 0) {
+        aiSayComment("Player black gives up! No legal moves!");
+        return selectedMove;
+    }
+    if (this.level === "beginner") {
+        selectedMove = allMoves[randInt(0, allMoves.length - 1)];
+    } else if (this.level === "intermediate") {
+        var virtualBoard = null;
+        var bestMove = null;
+        var bestPoints = null;
+        var currentMove = null;
+        var currentPoints = null;
+        var equalMoves = null;
+        for (var i = 0; i < allMoves.length; i++) {
+            currentMove = allMoves[i];
+            virtualBoard = copyBoard(board);
+            makeVirtualMove(currentMove.from, currentMove.to, virtualBoard);
+            currentPoints = this.evaluateBoard(virtualBoard);
+            /* Find the most desirable move */
+            if (bestMove === null || currentPoints < bestPoints) {
+                bestMove = currentMove;
+                bestPoints = currentPoints;
+                /* Erase weaker moves */
+                equalMoves = [bestMove];
+            } else if (currentPoints === bestPoints) {
+                equalMoves.push(currentMove);
+            }
+        }
+        selectedMove = equalMoves[randInt(0, equalMoves.length - 1)];
+    }
+    commentate(selectedMove.from, selectedMove.to, BLACK,
+               board.get(selectedMove.from), board.get(selectedMove.to));
+    return selectedMove;
+}
+
+/** Evaluates how good a board position is.
+ *  Positive favors white, while negative favors black.
+ */
+AIPlayer.prototype.evaluateBoard = function(board) {
+    var points = 0;
+    var piece = null;
+    for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+            piece = board.getAt(i, j);
+            if (piece.color === WHITE) {
+                points += getPieceValue(piece);
+            } else if (piece.color === BLACK) {
+                points -= getPieceValue(piece);
+            }
         }
     }
-    /* Return a dummy value */
-    return {from: "a1", to: "a1"}
+    return points;
 }
 
 function requestAIMove(aiPlayer, board) {
