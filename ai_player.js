@@ -6,6 +6,9 @@ function startGameAgainstAI(level) {
     } else if (level === "intermediate") {
         g_against = AI_INTERMEDIATE;
         aiSayComment("You are now playing against the intermediate AI.");
+    } else if (level === "advanced") {
+        g_against = AI_ADVANCED;
+        aiSayComment("You are now playing against the advanced AI.");
     }
     g_aiPlayer = new AIPlayer(level);
 }
@@ -50,6 +53,7 @@ AIPlayer.prototype.nextMove = function(board) {
         aiSayComment("Player black gives up! No legal moves!");
         return selectedMove;
     }
+    var result = null;
     if (this.level === "beginner") {
         var virtualBoard = null;
         var bestMove = null;
@@ -74,7 +78,17 @@ AIPlayer.prototype.nextMove = function(board) {
         }
         selectedMove = equalMoves[randInt(0, equalMoves.length - 1)];
     } else if (this.level === "intermediate") {
-        var result = this.negamax(board, 2, BLACK, null);
+        result = this.negamax(board, 2, BLACK, null);
+        selectedMove = result.move;
+    } else if (this.level === "advanced") {
+        var randFunction = function() {
+            return randInt(0, 9) > 7;
+        };
+        if (countPieces(board) <= 16) {
+            result = this.negamax(board, 3, BLACK, null, randFunction);
+        } else {
+            result = this.negamax(board, 2, BLACK, null, randFunction);
+        }
         selectedMove = result.move;
     }
     commentate(selectedMove.from, selectedMove.to, BLACK,
@@ -101,7 +115,12 @@ AIPlayer.prototype.evaluateBoard = function(board) {
     return points;
 }
 
-AIPlayer.prototype.negamax = function(board, depth, color, originalMove) {
+AIPlayer.prototype.negamax = function(board, depth, color, originalMove, randFunction) {
+    if (isUndefined(randFunction)) {
+        randFunction = function() {
+            return randInt(0, 1) === 0;
+        };
+    }
     var moves = getAILegalMoves(board, color);
     if (depth <= 0 || moves.length === 0) {
         /* Evaluation is done, so return value of leaf node */
@@ -121,12 +140,12 @@ AIPlayer.prototype.negamax = function(board, depth, color, originalMove) {
             currentMove = moves[i];
             nextBoard = copyBoard(board);
             makeVirtualMove(currentMove.from, currentMove.to, nextBoard);
-            result = this.negamax(nextBoard, depth - 1, getOppositeColor(color), currentMove);
+            result = this.negamax(nextBoard, depth - 1, getOppositeColor(color), currentMove, randFunction);
             currentValue = -result.value;
             /* Select the best move.
-             * If this move is equally as good, select it with a 50% chance. */
+             * If this move is equally as good, select it according to randFunction. */
             if (bestValue === null || currentValue > bestValue ||
-                (currentValue === bestValue && randInt(0, 1) === 0)) {
+                (currentValue === bestValue && randFunction())) {
                 bestValue = currentValue;
                 bestMove = currentMove;
             }
@@ -156,4 +175,19 @@ function requestAIMove(aiPlayer, board) {
         previousToSquare.className = getTileColor(getBaseColor(g_lastAIMove.to));
     }
     g_lastAIMove = move;
+}
+
+function countPieces(board) {
+    var columns = "abcdefgh";
+    var rows = "12345678";
+    var count = 0;
+    for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+            currentSquare = columns[i] + rows[j];
+            if (!board.get(currentSquare).isEmpty()) {
+                count++;
+            }
+        }
+    }
+    return count;
 }

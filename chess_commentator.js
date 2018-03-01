@@ -22,6 +22,7 @@ var PIECE_NOT_FOUND = "not_found";
 var HUMAN = "human";
 var AI_BEGINNER = "ai_beginner";
 var AI_INTERMEDIATE = "ai_intermediate";
+var AI_ADVANCED = "ai_advanced";
 
 var g_currentlySelectedSquareString = null;
 var g_board = new Board();
