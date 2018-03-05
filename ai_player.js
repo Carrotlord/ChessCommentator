@@ -82,12 +82,14 @@ AIPlayer.prototype.nextMove = function(board) {
         selectedMove = result.move;
     } else if (this.level === "advanced") {
         var randFunction = function() {
-            return randInt(0, 9) > 7;
+            return randInt(0, 4) === 4;
         };
         if (countPieces(board) <= 16) {
-            result = this.negamax(board, 3, BLACK, null, randFunction);
+            result = this.alphaBetaNegamax(board, 4, BLACK, -99999999, 99999999,
+                                           null, randFunction);
         } else {
-            result = this.negamax(board, 2, BLACK, null, randFunction);
+            result = this.alphaBetaNegamax(board, 3, BLACK, -99999999, 99999999,
+                                           null, randFunction);
         }
         selectedMove = result.move;
     }
@@ -148,6 +150,44 @@ AIPlayer.prototype.negamax = function(board, depth, color, originalMove, randFun
                 (currentValue === bestValue && randFunction())) {
                 bestValue = currentValue;
                 bestMove = currentMove;
+            }
+        }
+        return {value: bestValue, move: bestMove};
+    }
+}
+
+AIPlayer.prototype.alphaBetaNegamax = function(board, depth, color, alpha, beta, originalMove, randFunction) {
+    var moves = getAILegalMoves(board, color);
+    if (depth <= 0 || moves.length === 0) {
+        if (color === WHITE) {
+            return {value: this.evaluateBoard(board), move: originalMove};
+        } else {
+            return {value: -this.evaluateBoard(board), move: originalMove};
+        }
+    } else {
+        var bestValue = null;
+        var bestMove = null;
+        var currentValue = null;
+        var currentMove = null;
+        var nextBoard = null;
+        var result = null;
+        for (var i = 0; i < moves.length; i++) {
+            currentMove = moves[i];
+            nextBoard = copyBoard(board);
+            makeVirtualMove(currentMove.from, currentMove.to, nextBoard);
+            result = this.alphaBetaNegamax(nextBoard, depth - 1, getOppositeColor(color),
+                                           -beta, -alpha, currentMove, randFunction);
+            currentValue = -result.value;
+            if (bestValue === null || currentValue > bestValue ||
+                (currentValue === bestValue && randFunction())) {
+                bestValue = currentValue;
+                bestMove = currentMove;
+            }
+            if (currentValue > alpha) {
+                alpha = currentValue;
+            }
+            if (alpha >= beta) {
+                break;
             }
         }
         return {value: bestValue, move: bestMove};
